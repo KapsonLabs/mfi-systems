@@ -2,9 +2,16 @@ language: python
 python:
 - "3.6"
 # setup environment
+services:
+  - postgresql
 env:
-- DJANGO_VERSION=2.1.7
-- DJANGO_SETTINGS_MODULE='mfi_systems_api.settings.test'
+  - DJANGO=2.1.7 DB=postgresql
+install:
+  - pip install -r requirements.txt
+before_script:
+  - psql -e 'create database test;' -u root
+# script:
+#   - python manage.py test
 # install dependencies
 install:
 - pip install -r requirements.txt

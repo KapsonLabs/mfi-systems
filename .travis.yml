@@ -9,7 +9,7 @@ env:
 install:
   - pip install -r requirements.txt
 before_script:
-  - psql -e 'create database test;' -U postgres
+  - psql -c 'CREATE DATABASE test;' -U postgres
 # script:
 #   - python manage.py test
 # install dependencies

@@ -1,13 +1,36 @@
 language: python
-    python: 
-      - "3.6"
-    services:
-      - postgresql
-    env:
-      -DJANGO=2.1.7 DB=postgresql
-    install:
-      - pip install -r requirements.txt
-    before_script:
-      - psql -e 'create database test;' -u root
-    script:
-      - python manage.py test
+python:
+- "3.6"
+# setup environment
+env:
+- DJANGO_VERSION=2.1.7
+- DJANGO_SETTINGS_MODULE='mfi_systems_api.settings.test'
+# install dependencies
+install:
+- pip install -r requirements.txt
+#npm install bower
+# run test scripts
+script:
+#bower install --settings=bucketlist.settings.test
+#python bucketlist/manage.py collectstatic --noinput --settings=bucketlist.settings.test
+#coverage run --source=. bucketlist/manage.py test bucketlist/api --noinput --settings=bucketlist.settings.test
+- coverage run --source=. mfi_systems_api/manage.py test
+# run coveralls after successful tests
+after_success:
+- coveralls
+# Deploy to staging or production with proper settings
+#deploy:
+#provider: heroku
+#api_key:
+#secure: mYME2rzQoCg96XW3Y4dVpajlKGhBCQmxKUq5gKdWfu6OTf2VIp/N8Q2S+cQXWLhIENjSt3d1t/czNyrzRAo5qqyCVepDRJ19vbMj0onB+Ue6wGxYSV4/TKJrUv9unjj4yfzn3bEZ7eQ4b7z4HTrNFSkONUol2UREkmUWn2vv3BM0V4gp8QDZFjxA3uyu72XX4BEoid6t7+U5xJkMSnSYUHCjG7YydDEZ7Wgs1no01ONN6ZMhq2aAh6mcIvrTpaROXaF5nGzmi7wqURv0CK+5d77IXN0YbCjkLprN+SeXo5uVwjoWyY8Mxy2DeJw/0Z9V8YJxd0qSrgK3P7gmKdD3aCGRLPwYHFAHr3coGNjX7tuxerMxNQzAHB/RnO6PhyKNg35fz60fkSuPzsW9nDrMVpvjeIM9sTrsj7E0lJGs3gPCK8mLaEWDJse1HF2B0D66M72Rak3bhfnu94F9XWHUFIjWGvnUjFzk2hpnlFBmpYDxRaNmuGUI+OXDi/91u/oyKOpVLgFB4/+ixeDEaDKELiIchpjKmVsL49pFnP4BOG8VLJUE8GNBEJRE0C7gY0sJbJXVUmHgyND+YA4uf3+rcl1Nh/oDk9YNl8PzrtHPMVjgC9ZhT03NY3wy3KpseMlnnS80xf5kT52ldhP23PkNavhN4WRVydDLQ+hxdDQsCII=
+#buildpack:
+#- node
+#- python
+#app: dothebucket
+#on:
+#all_branches: true
+#run:
+#- "export DJANGO_SETTINGS_MODULE=bucketlist.settings.production"
+#- "python bucketlist/manage.py collectstatic --noinput --settings=bucketlist.settings.production"
+#- "python bucketlist/manage.py makemigrations --settings=bucketlist.settings.production"
+#- "python bucketlist/manage.py migrate --settings=bucketlist.settings.production"

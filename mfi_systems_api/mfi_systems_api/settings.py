@@ -125,6 +125,19 @@ WSGI_APPLICATION = 'mfi_systems_api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+#Database for travis configuration
+if 'TRAVIS' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.postgresql',
+            'NAME':     'travisci',
+            'USER':     'postgres',
+            'PASSWORD': '',
+            'HOST':     'localhost',
+            'PORT':     '',
+        }
+    }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',

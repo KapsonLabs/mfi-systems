@@ -9,7 +9,7 @@ env:
 install:
   - pip install -r requirements.txt
 before_script:
-  - psql -e 'create database test;' -u root
+  - psql -e 'create database test;' -U root
 # script:
 #   - python manage.py test
 # install dependencies

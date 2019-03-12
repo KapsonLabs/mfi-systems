@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "mfi_env/bin/python",
+    "git.ignoreLimitWarning": true
+}

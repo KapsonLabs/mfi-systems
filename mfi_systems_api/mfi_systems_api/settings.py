@@ -176,7 +176,3 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 AUTH_USER_MODEL = 'accounts.User'
-<<<<<<< HEAD
-
-=======
->>>>>>> ab2ecc00f3c5e696774872482ce5938590bd7e2f

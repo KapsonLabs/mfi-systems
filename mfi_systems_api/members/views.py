@@ -8,11 +8,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
+from rest_framework import permissions
 
 class GroupList(APIView):
     """
     List all groups and create a group.
     """
+    permission_classes = (permissions.IsAuthenticated,)
+
     def get(self, request, format=None):
         snippets = LoanGroup.objects.all()
         serializer = LoanGroupSerializer(snippets, many=True)
@@ -32,6 +35,8 @@ class GroupDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
+    permission_classes = (permissions.IsAuthenticated,)
+
     def get_object(self, pk):
         try:
             return LoanGroup.objects.get(pk=pk)
@@ -60,10 +65,22 @@ class GroupDetail(APIView):
         loan_group.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+class UserClientCreate(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    def post(self, request, format=None):
+        user_client_serializer = UserSerializer(data=request.data)
+        #print(serializer)
+        if user_client_serializer.is_valid():
+            user_client_serializer.save()
+            data_dict = {"status":201, "data":user_client_serializer.data}
+            return Response(data_dict, status=status.HTTP_201_CREATED)
+        return Response(user_client_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class MemberList(APIView):
     """
     List all members and create a new member.
     """
+    permission_classes = (permissions.IsAuthenticated,)
     def get(self, request, format=None):
         snippets = GroupMember.objects.all()
         serializer = GroupMemberSerializer(snippets, many=True)
@@ -83,6 +100,7 @@ class MemberDetail(APIView):
     """
     Retrieve, update or delete a member instance
     """
+    permission_classes = (permissions.IsAuthenticated,)
     def get_object(self, pk):
         try:
             return GroupMember.objects.get(pk=pk)
@@ -115,6 +133,7 @@ class GroupMemberList(APIView):
     """
     List all members that belong to a particular group
     """
+    permission_classes = (permissions.IsAuthenticated,)
     def get(self, request, pk, format=None):
         group_members = GroupMember.objects.filter(group_id=pk)
         print(group_members)

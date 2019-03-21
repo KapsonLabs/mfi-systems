@@ -72,7 +72,9 @@ class UserClientCreate(APIView):
         #print(serializer)
         if user_client_serializer.is_valid():
             user_client_serializer.save()
-            data_dict = {"status":201, "data":user_client_serializer.data}
+            # user = user_client_serializer.create
+            # print(user)
+            data_dict = {"status":201, "data":user_client_serializer.data, 'id':user_client_serializer.data['id']}
             return Response(data_dict, status=status.HTTP_201_CREATED)
         return Response(user_client_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

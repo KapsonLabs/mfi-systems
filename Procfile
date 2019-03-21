@@ -1,1 +1,0 @@
-web: gunicorn mfi_systems_api/mfi_systems_api.wsgi

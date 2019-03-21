@@ -29,7 +29,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost','127.0.0.1']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -58,9 +57,9 @@ ROOT_URLCONF = 'mfi_systems_api.urls'
 
 REST_FRAMEWORK = {
     
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ],
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    # ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
@@ -93,7 +92,7 @@ JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LEEWAY': 0,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=300),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=1500),
     'JWT_AUDIENCE': None,
     'JWT_ISSUER': None,
 
@@ -178,6 +177,3 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 AUTH_USER_MODEL = 'accounts.User'
-
-django_heroku.settings(locals())
-

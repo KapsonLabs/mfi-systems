@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'nxz9cqv3pfpx(u^b$fnyqzy)waz21jk^b4%#ijb4_%a@#7+bo%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+ALLOWED_HOSTS = ['18.188.207.235']
 
 # Application definition
 
@@ -125,16 +125,16 @@ WSGI_APPLICATION = 'mfi_systems_api.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 #Database for travis configuration
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'mfi_db',
-#         'USER': 'djangoappguy',
-#         'PASSWORD': 'django1234',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mfi_db',
+        'USER': 'djangoappguy',
+        'PASSWORD': 'django1234',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
 
 
 # Password validation
@@ -174,5 +174,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 AUTH_USER_MODEL = 'accounts.User'

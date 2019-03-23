@@ -72,9 +72,9 @@ REST_FRAMEWORK = {
     
 }
 
-if DEBUG:
-    # the default value
-    REST_FRAMEWORK['DEFAULT_METADATA_CLASS']: 'rest_framework.metadata.SimpleMetadata'
+# if DEBUG:
+#     # the default value
+#     REST_FRAMEWORK['DEFAULT_METADATA_CLASS']: 'rest_framework.metadata.SimpleMetadata'
 
 
 #jwt settings

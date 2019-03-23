@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/login/', LoginView.as_view(), name="auth-login"),
     path('api/v1/', include('members.urls'), name="member-routes"),
+    path('api/v1/', include('loans.urls'), name="loans-routes"),
 ]

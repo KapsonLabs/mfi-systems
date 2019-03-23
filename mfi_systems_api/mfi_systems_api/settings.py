@@ -26,6 +26,8 @@ SECRET_KEY = 'nxz9cqv3pfpx(u^b$fnyqzy)waz21jk^b4%#ijb4_%a@#7+bo%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+#ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
 ALLOWED_HOSTS = ['18.188.207.235']
 
 # Application definition
@@ -40,11 +42,14 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'members',
+    'loans',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -59,12 +64,18 @@ REST_FRAMEWORK = {
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     # ],
+    'DEFAULT_METADATA_CLASS': None,
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ],
     
 }
+
+if DEBUG:
+    # the default value
+    REST_FRAMEWORK['DEFAULT_METADATA_CLASS']: 'rest_framework.metadata.SimpleMetadata'
+
 
 #jwt settings
 JWT_AUTH = {
@@ -101,6 +112,8 @@ JWT_AUTH = {
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_AUTH_COOKIE': None,
 }
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 TEMPLATES = [
     {

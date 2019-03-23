@@ -4,4 +4,12 @@ from .models import Loan
 class LoanSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loan
-        fields = ('loan_applicant', 'username', 'first_name' ,'other_names', 'email_address', 'date_of_birth','gender', 'employment', 'phone_dialing_code','phone_number', 'marital_status', 'spouse_full_name', 'id_number','id_attachment_front', 'id_attachment_back', 'profile_picture', 'present_village', 'present_subcounty', 'present_county', 'present_division', 'present_district')
+        fields = ('id', 'loan_applicant', 'principal_amount', 'loan_type', 'loan_cycle_frequency', 'expected_duration' ,'loan_purpose', 'guarantor1', 'guarantor2', 'expected_income_corebznss', 'expected_profit_corebznss', 'corebznss_comment')
+
+    def create(self, validated_data):
+        loan = super(LoanSerializer, self).create(validated_data)
+        # loan.interest_rate=1
+        # loan.loan_insurance_fee=(float(validated_data['principal_amount'])*0.01)
+        # loan.responsible_loan_officer=2
+        loan.save()
+        return loan

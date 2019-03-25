@@ -9,12 +9,13 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework import permissions
+from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
 
 class GroupList(APIView):
     """
     List all groups and create a group.
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
 
     def get(self, request, format=None):
         snippets = LoanGroup.objects.all()
@@ -35,7 +36,7 @@ class GroupDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
 
     def get_object(self, pk):
         try:
@@ -66,7 +67,7 @@ class GroupDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserClientCreate(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
     def post(self, request, format=None):
         user_client_serializer = UserSerializer(data=request.data)
         #print(serializer)
@@ -82,10 +83,10 @@ class MemberList(APIView):
     """
     List all members and create a new member.
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
     def get(self, request, format=None):
-        snippets = GroupMember.objects.all()
-        serializer = GroupMemberSerializer(snippets, many=True)
+        members = GroupMember.objects.all()
+        serializer = GroupMemberSerializer(members, many=True)
         data_dict = {"status":200, "data":serializer.data}
         return Response(data_dict, status=status.HTTP_200_OK)
 
@@ -102,7 +103,7 @@ class MemberDetail(APIView):
     """
     Retrieve, update or delete a member instance
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
     def get_object(self, pk):
         try:
             return GroupMember.objects.get(pk=pk)

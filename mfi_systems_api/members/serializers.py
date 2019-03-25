@@ -6,7 +6,7 @@ from rest_framework import serializers
 class LoanGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoanGroup
-        fields = ('id', 'group_name', 'branch_name')
+        fields = ('id', 'group_name', 'branch_name', 'date_created')
 
 class GroupMemberSerializer(serializers.ModelSerializer):
     """
@@ -15,7 +15,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GroupMember
-        fields = ('id', 'user_id','group_id', 'date_of_birth','gender', 'employment', 'phone_dialing_code','phone_number', 'marital_status', 'spouse_full_name', 'id_number','id_attachment_front', 'id_attachment_back', 'profile_picture', 'present_village', 'present_subcounty', 'present_county', 'present_division', 'present_district')
+        fields = ('id', 'user_id','group_id', 'date_of_birth','gender', 'employment', 'phone_dialing_code','phone_number', 'marital_status', 'spouse_full_name', 'id_number','id_attachment_front', 'id_attachment_back', 'profile_picture', 'present_village', 'present_subcounty', 'present_county', 'present_division', 'present_district', 'date_created')
 
 
     # def create(self, validated_data):

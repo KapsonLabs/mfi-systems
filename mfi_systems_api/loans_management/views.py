@@ -18,7 +18,7 @@ class LoansList(APIView):
     """
     List all groups and create a group.
     """
-    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, format=None):
         snippets = Loans.objects.all()
@@ -40,7 +40,7 @@ class LoansDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
-    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, pk, format=None):
         loan_group = get_object(Loans, pk)
@@ -68,7 +68,7 @@ class LoansStatus(APIView):
     """
     Check and update loan status
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, pk, format=None):
         loan = get_object(Loans, pk)

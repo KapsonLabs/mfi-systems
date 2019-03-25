@@ -15,7 +15,7 @@ class GroupList(APIView):
     """
     List all groups and create a group.
     """
-    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, format=None):
         snippets = LoanGroup.objects.all()
@@ -36,7 +36,7 @@ class GroupDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
-    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get_object(self, pk):
         try:
@@ -67,7 +67,7 @@ class GroupDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class UserClientCreate(APIView):
-    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
     def post(self, request, format=None):
         user_client_serializer = UserSerializer(data=request.data)
         #print(serializer)
@@ -83,7 +83,7 @@ class MemberList(APIView):
     """
     List all members and create a new member.
     """
-    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
     def get(self, request, format=None):
         members = GroupMember.objects.all()
         serializer = GroupMemberSerializer(members, many=True)
@@ -103,7 +103,7 @@ class MemberDetail(APIView):
     """
     Retrieve, update or delete a member instance
     """
-    permission_classes = (permissions.IsAuthenticated, BranchManagerPermissions, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
     def get_object(self, pk):
         try:
             return GroupMember.objects.get(pk=pk)
@@ -136,7 +136,7 @@ class GroupMemberList(APIView):
     """
     List all members that belong to a particular group
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, )
     def get(self, request, pk, format=None):
         group_members = GroupMember.objects.filter(group_id=pk)
         print(group_members)

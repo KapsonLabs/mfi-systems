@@ -1,7 +1,9 @@
+import datetime
+
 from rest_framework import generics
 from members.models import GroupMember
-from .models import Loans
-from .serializers import LoansSerializer, LoanStatusSerializer
+from .models import Loans, LoanCycles
+from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 
@@ -10,7 +12,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework import permissions
 
-from helpers.helpers import get_object
+from helpers.helpers import get_object, calculate_next_payment_date, calculate_payment_cycles
 
 from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
 
@@ -21,9 +23,22 @@ class LoansList(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, format=None):
-        snippets = Loans.objects.all()
-        serializer = LoansSerializer(snippets, many=True)
         related_links = 'links'
+        loan_status = self.request.query_params.get('status', None)
+        loans = Loans.objects.all()
+        if loan_status is not None:
+            if loan_status=='unapproved':
+                loans = loans.filter(loan_status=False)
+            elif loan_status=='approved':
+                loans = loans.filter(loan_status=True)
+            elif loan_status=='disbursed':
+                loans = loans.filter(is_loan_disbursed=True)
+            elif loan_status=='completed':
+                loans = loans.filter(loan_completed=True)
+        else:
+            pass
+
+        serializer = LoansSerializer(loans, many=True)
         data_dict = {"status":200, "links":related_links, "data":serializer.data}
         return Response(data_dict, status=status.HTTP_200_OK)
 
@@ -73,6 +88,65 @@ class LoansStatus(APIView):
     def get(self, request, pk, format=None):
         loan = get_object(Loans, pk)
         serializer = LoanStatusSerializer(loan)
-        data_with_link = dict(serializer.data)#["member"] = 'groups/{}/members/'.format(pk)
+        data_with_link = dict(serializer.data)
         data_dict = {"data":data_with_link, "status":200}
         return Response(data_dict, status=status.HTTP_200_OK)
+
+class LoanStatusUpdate(generics.UpdateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def update(self, request, pk ,*args, **kwargs):
+        instance = get_object(Loans, pk)
+        if request.data['loan_status'] == 'Approve' and instance.loan_status==False:
+            loan_status={'loan_status':True}
+            serializer = UpdateLoanStatusSerializer(
+                instance=instance,
+                data=loan_status
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            # loan approval part auditing
+            # loan_approved={'loan_approved':pk, }
+            # loan_approver=LoanApprovalSerializer(
+            #     data=loan_approved,
+            # )
+            
+            # loan_approver.is_valid(raise_exception=True)
+            # loan_approver.save(approved_by=request.user)
+
+            loan_status_dict={"data":serializer.data, "status":200, "message":"Loan approved successfully, You can now disburse it"}
+        else:
+            loan_status_dict={"status":200, "error":"Loan has already been approved"}
+        return Response(loan_status_dict, status=status.HTTP_200_OK)
+
+
+class LoanDisbursement(generics.UpdateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def update(self, request, pk ,*args, **kwargs):
+        instance = get_object(Loans, pk)
+        if request.data['is_loan_disbursed'] == 'Disburse' and instance.loan_status==True and instance.is_loan_disbursed==False:
+            next_payment_date = calculate_next_payment_date(instance.loan_cycle_frequency, datetime.datetime.now())
+            loan_disburse={'is_loan_disbursed':True, 'next_payment_date':next_payment_date}
+            serializer = DisburseLoanSerializer(
+                instance=instance,
+                data=loan_disburse
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            
+            try:
+                cycles = calculate_payment_cycles(int(instance.expected_duration), instance.loan_cycle_frequency, float(instance.loan_balance_to_pay), instance.next_payment_date)
+                for cycle in cycles:
+                    cycle['loan'] = pk
+                    loan_cycle = LoanCycleSerializer(data=cycle)
+                    loan_cycle.is_valid(raise_exception=True)
+                    loan_cycle.save()
+            except:
+                print("Biganye")
+            loan_status_dict={"data":serializer.data, "loan_cycles":cycles, "status":200, "message":"Loan disbursement successfull"}
+
+        else:
+            loan_status_dict={"status":200, "error":"Loan hasnt yet been approved or loan was already disbursed"}
+        return Response(loan_status_dict, status=status.HTTP_200_OK)

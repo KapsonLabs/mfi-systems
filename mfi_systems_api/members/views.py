@@ -4,6 +4,7 @@ from .serializers import LoanGroupSerializer, GroupMemberSerializer
 from accounts.serializers import UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
+from accounts.models import User
 
 from rest_framework.response import Response
 from rest_framework import serializers
@@ -68,6 +69,13 @@ class GroupDetail(APIView):
 
 class UserClientCreate(APIView):
     permission_classes = (permissions.IsAuthenticated, )
+
+    def get(self, request, format=None):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        data_dict = {"status":200, "data":serializer.data}
+        return Response(data_dict, status=status.HTTP_200_OK)
+
     def post(self, request, format=None):
         user_client_serializer = UserSerializer(data=request.data)
         #print(serializer)
@@ -78,6 +86,24 @@ class UserClientCreate(APIView):
             data_dict = {"status":201, "data":user_client_serializer.data, 'id':user_client_serializer.data['id']}
             return Response(data_dict, status=status.HTTP_201_CREATED)
         return Response(user_client_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserDetail(APIView):
+    def get_object(self, pk):
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk, format=None):
+        user_detail = self.get_object(pk)
+        serializer = UserSerializer(user_detail)
+        # data_with_link = dict(serializer.data)#["member"] = 'groups/{}/members/'.format(pk)
+        # links = {'members': 'api/v1/groups/{}/members/'.format(pk)}
+        # data_with_link['links'] = links
+        data_dict = {"data":serializer.data, "status":200}
+        return Response(data_dict, status=status.HTTP_200_OK)    
+
 
 class MemberList(APIView):
     """

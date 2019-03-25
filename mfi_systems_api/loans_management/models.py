@@ -30,7 +30,7 @@ class Loans(models.Model):
     loan_cycle                  = models.CharField(max_length=200, null=True, blank=True)
     loan_completed              = models.BooleanField(default=False)
     loan_status                 = models.BooleanField(default=False)
-    loan_disbursed              = models.BooleanField(default=False)
+    is_loan_disbursed           = models.BooleanField(default=False)
     loan_completed_date         = models.DateTimeField(blank=True, null=True)
     timestamp                   = models.DateField(auto_now_add=True)
 
@@ -41,12 +41,25 @@ class LoanApproval(models.Model):
     """
     Loan Approval Model
     """
-    approved_by     = models.ForeignKey(User, on_delete=models.CASCADE, blank=False, null=False)
-    loan            = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approval_officer')
+    approved_by     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approval_officer')
+    approved_loan   = models.ForeignKey(Loans, on_delete=models.CASCADE, related_name='loan_approved')
     date_approved   = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "{} Loan approved by {} member".format(self.loan, self.approved_by)
+        return "{} Loan approved by {} member".format(self.approved_loan, self.approved_by)
+
+
+class LoanDisbursal(models.Model):
+    """
+    Loan Disbursal Model
+    """
+    disbursed_by     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='disbursal_officer')
+    disbursed_loan   = models.ForeignKey(Loans, on_delete=models.CASCADE, related_name='loan_disbursed')
+    date_disbursed   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "{} Loan disbursed by {} member".format(self.disbursed_loan, self.disbursed_by)
+
 
 class LoanCycles(models.Model):
     """
@@ -55,7 +68,13 @@ class LoanCycles(models.Model):
     loan                = models.ForeignKey(Loans, on_delete=models.CASCADE, null=False, blank=False)
     cycle_date          = models.DateTimeField(auto_now_add=False)
     cycle_status        = models.CharField(max_length=100, null=False, blank=False, default="Pending")
-    amount_expected     = models.CharField(max_length=20, null=False, blank=False,validators=[RegexValidator(r'(^[0-9+-]+$)')]) 
-    amount_paid         = models.CharField(max_length=20, null=True, blank=True,validators=[RegexValidator(r'(^[0-9+-]+$)')]) 
-    balance             = models.CharField(max_length=20, null=True, blank=True,validators=[RegexValidator(r'(^[0-9+-]+$)')]) 
-    loan_balance        = models.CharField(max_length=20, null=True, blank=True,validators=[RegexValidator(r'(^[0-9+-]+$)')])  
+    amount_expected     = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True) 
+    amount_paid         = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True) 
+    balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
+    loan_balance        = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
+
+# class LoanPayments(models.Model):
+#     """
+#     Loan Payments Model
+#     """ 
+

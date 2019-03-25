@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'nxz9cqv3pfpx(u^b$fnyqzy)waz21jk^b4%#ijb4_%a@#7+bo%'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+#DEBUG = True
 
 #ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'members',
-    'loans',
+    'loans_management',
     'corsheaders',
 ]
 
@@ -102,7 +102,7 @@ JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LEEWAY': 0,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=1500),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=200000),
     'JWT_AUDIENCE': None,
     'JWT_ISSUER': None,
 

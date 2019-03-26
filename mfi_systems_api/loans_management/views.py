@@ -139,7 +139,7 @@ class LoanDisbursement(generics.UpdateAPIView):
             try:
                 cycles = calculate_payment_cycles(int(instance.expected_duration), instance.loan_cycle_frequency, float(instance.loan_balance_to_pay), instance.next_payment_date)
                 for cycle in cycles:
-                    cycle['loan'] = pk
+                    cycle['related_loan'] = pk
                     loan_cycle = LoanCycleSerializer(data=cycle)
                     loan_cycle.is_valid(raise_exception=True)
                     loan_cycle.save()
@@ -150,3 +150,17 @@ class LoanDisbursement(generics.UpdateAPIView):
         else:
             loan_status_dict={"status":200, "error":"Loan hasnt yet been approved or loan was already disbursed"}
         return Response(loan_status_dict, status=status.HTTP_200_OK)
+
+
+class LoanCyclesView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, pk, format=None):
+        cycles=LoanCycles.objects.all()
+        loan_group = get_object(Loans, pk)
+        print(loan_group)
+        loan_cycles = cycles.filter(related_loan=loan_group)
+        print(loan_cycles)
+        serializer = LoanCycleSerializer(loan_cycles)
+        data_dict = {"data":serializer.data, "status":200}
+        return Response(data_dict, status=status.HTTP_200_OK)

@@ -65,7 +65,7 @@ class LoanCycles(models.Model):
     """
     Loan Cycles Model
     """
-    loan                = models.ForeignKey(Loans, on_delete=models.CASCADE, null=False, blank=False)
+    related_loan        = models.ForeignKey(Loans, on_delete=models.CASCADE, null=False, blank=False, related_name='related_loan_for_cycle')
     cycle_date          = models.DateTimeField(auto_now_add=False)
     cycle_status        = models.CharField(max_length=100, null=False, blank=False, default="Pending")
     amount_expected     = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True) 
@@ -73,8 +73,17 @@ class LoanCycles(models.Model):
     balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
     loan_balance        = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
 
-# class LoanPayments(models.Model):
-#     """
-#     Loan Payments Model
-#     """ 
+
+class LoanPayments(models.Model):
+    """
+    Loan Payments Model
+    """ 
+    related_loan_cycle  = models.ForeignKey(LoanCycles, on_delete=models.CASCADE, null=False, blank=False)
+    amount_paid         = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
+    received_by         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_confirmation_officer', null=True, blank=True) 
+    balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)  
+    fined_amount        = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
+    comment             = models.TextField()
+    date_paid           = models.DateTimeField(auto_now_add=False)
+    timestamp           = models.DateTimeField(auto_now_add=True)
 

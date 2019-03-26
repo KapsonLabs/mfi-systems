@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from .models import Loans, LoanCycles, LoanApproval, LoanDisbursal, LoanPayments
-from members.serializers import GroupMemberSerializer
+from members.serializers import GroupMemberSerializer, ShortGroupMemberSerializer
+from accounts.serializers import UserSerializer
 
 class LoansSerializer(serializers.ModelSerializer):
-    # loan_applicant = GroupMemberSerializer(read_only=True)
+    responsible_loan_officer = UserSerializer(read_only=True)
+    loan_applicant = ShortGroupMemberSerializer(read_only=True)
 
     class Meta:
         model = Loans
-        fields = ('id', 'principal_amount', 'interest_rate', 'loan_type', 'loan_insurance_fee', 'loan_processing_fee', 'loan_cycle_frequency', 'loan_balance_to_pay', 'expected_duration' ,'loan_purpose', 'guarantor1', 'guarantor2', 'expected_income_corebznss', 'expected_profit_corebznss', 'corebznss_comment', 'loan_completed', 'loan_status', 'is_loan_disbursed', 'timestamp', 'loan_applicant')
+        fields = ('id' ,'principal_amount', 'interest_rate', 'loan_type', 'loan_insurance_fee', 'loan_processing_fee', 'loan_cycle_frequency', 'loan_balance_to_pay', 'expected_duration' ,'loan_purpose', 'guarantor1', 'guarantor2', 'expected_income_corebznss', 'expected_profit_corebznss', 'corebznss_comment', 'loan_completed', 'loan_status', 'is_loan_disbursed', 'timestamp', 'responsible_loan_officer', 'loan_applicant')
 
     def create(self, validated_data):
         loan = super(LoansSerializer, self).create(validated_data)
@@ -66,3 +68,11 @@ class LoanPaymentsSerializer(serializers.ModelSerializer):
     class Meta:
         model=LoanPayments
         fields=('id', 'amount_paid', 'fined_amount', 'comment', 'date_paid')
+
+class LoanCycleListSerializer(serializers.ModelSerializer):
+
+    related_loan = LoanStatusSerializer(read_only=True)
+
+    class Meta:
+        model=LoanCycles
+        fields=('id', 'cycle_date', 'amount_expected', 'cycle_status', 'related_loan')

@@ -29,3 +29,14 @@ class GroupMemberSerializer(serializers.ModelSerializer):
         user = User.objects.create(**user_data)
         member = GroupMember.objects.create(user_id=user, **validated_data)
         return member
+
+class ShortGroupMemberSerializer(serializers.ModelSerializer):
+    """
+    A group member serializer to return the member details
+    """
+    user_id = UserSerializer(read_only=True)
+    group_id = LoanGroupSerializer(read_only=True)
+
+    class Meta:
+        model = GroupMember
+        fields = ('id', 'user_id' ,'group_id', 'date_of_birth','gender', 'employment', 'phone_dialing_code','phone_number')

@@ -3,7 +3,7 @@ import datetime
 from rest_framework import generics
 from members.models import GroupMember
 from .models import Loans, LoanCycles
-from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer
+from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer, LoanCycleListSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 
@@ -161,6 +161,6 @@ class LoanCyclesView(APIView):
         print(loan_group)
         loan_cycles = cycles.filter(related_loan=loan_group)
         print(loan_cycles)
-        serializer = LoanCycleSerializer(loan_cycles)
+        serializer = LoanCycleListSerializer(loan_cycles, many=True)
         data_dict = {"data":serializer.data, "status":200}
         return Response(data_dict, status=status.HTTP_200_OK)

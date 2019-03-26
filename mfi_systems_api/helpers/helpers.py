@@ -41,3 +41,7 @@ def calculate_payment_cycles(expected_duration, cycle_frequency, expected_paymen
         return cycles
     else:
         pass
+
+def calculate_balance(larger_amount, smaller_amount):
+    result = larger_amount - smaller_amount 
+    return result if result > 0 else 0

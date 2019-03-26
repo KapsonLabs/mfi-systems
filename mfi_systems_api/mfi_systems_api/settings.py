@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'accounts',
     'members',
     'loans_management',
+    'mfi_statistics',
     'corsheaders',
 ]
 

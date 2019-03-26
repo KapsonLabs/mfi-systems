@@ -1,6 +1,6 @@
 from rest_framework import generics
 from .models import LoanGroup, GroupMember
-from .serializers import LoanGroupSerializer, GroupMemberSerializer
+from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer
 from accounts.serializers import UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
@@ -112,13 +112,12 @@ class MemberList(APIView):
     permission_classes = (permissions.IsAuthenticated, )
     def get(self, request, format=None):
         members = GroupMember.objects.all()
-        serializer = GroupMemberSerializer(members, many=True)
+        serializer = GroupMemberListSerializer(members, many=True)
         data_dict = {"status":200, "data":serializer.data}
         return Response(data_dict, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         member_serializer = GroupMemberSerializer(data=request.data)
-        #print(serializer)
         if member_serializer.is_valid():
             member_serializer.save()
             data_dict = {"status":201, "data":member_serializer.data}
@@ -138,7 +137,7 @@ class MemberDetail(APIView):
 
     def get(self, request, pk, format=None):
         group_member = self.get_object(pk)
-        serializer = GroupMemberSerializer(group_member)
+        serializer = GroupMemberListSerializer(group_member)
         data_with_link = dict(serializer.data)
         links = {'loans': 'api/v1/members/{}/loans/'.format(pk)}
         data_with_link['links'] = links
@@ -147,7 +146,7 @@ class MemberDetail(APIView):
 
     def put(self, request, pk, format=None):
         group_member = self.get_object(pk)
-        serializer = GroupMemberSerializer(group_member, data=request.data)
+        serializer = GroupMemberListSerializer(group_member, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Loans, LoanCycles, LoanApproval, LoanDisbursal, LoanPayments
-from members.serializers import GroupMemberSerializer, ShortGroupMemberSerializer
+from members.serializers import GroupMemberSerializer, ShortGroupMemberSerializer, ShortMemberSerializer
 from accounts.serializers import UserSerializer
 
 class LoansSerializer(serializers.ModelSerializer):
@@ -30,6 +30,14 @@ class LoansSerializer(serializers.ModelSerializer):
     #     # return the modified representation
     #     return loan_representation
 
+class ShortLoanSerializer(serializers.ModelSerializer):
+    loan_applicant = ShortMemberSerializer(read_only=True)
+
+    class Meta:
+        model = Loans
+        fields = ('id' ,'principal_amount', 'loan_balance_to_pay', 'loan_completed', 'timestamp', 'loan_applicant')
+
+
 class LoanStatusSerializer(serializers.ModelSerializer):
     loan_applicant = GroupMemberSerializer(read_only=True)
 
@@ -52,7 +60,7 @@ class DisburseLoanSerializer(serializers.ModelSerializer):
 class LoanCycleSerializer(serializers.ModelSerializer):
     class Meta:
         model=LoanCycles
-        fields=('id', 'related_loan', 'cycle_date', 'amount_expected')
+        fields=('id', 'related_loan', 'cycle_date', 'amount_expected', 'loan_balance')
 
 class LoanApprovalSerializer(serializers.ModelSerializer):
     class Meta:
@@ -68,11 +76,19 @@ class LoanPaymentsSerializer(serializers.ModelSerializer):
     class Meta:
         model=LoanPayments
         fields=('id', 'amount_paid', 'fined_amount', 'comment', 'date_paid')
+        read_only_fields = ('related_loan_cycle', )
 
 class LoanCycleListSerializer(serializers.ModelSerializer):
 
-    related_loan = LoanStatusSerializer(read_only=True)
+    related_loan = ShortLoanSerializer(read_only=True)
 
     class Meta:
         model=LoanCycles
-        fields=('id', 'cycle_date', 'amount_expected', 'cycle_status', 'related_loan')
+        fields=('id', 'cycle_date', 'amount_expected', 'amount_paid', 'balance', 'cycle_status', 'loan_balance', 'related_loan')
+
+class LoanCycleUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=LoanCycles
+        fields=('id', 'related_loan', 'amount_paid', 'balance', 'cycle_status', 'loan_balance', 'cycle_date', 'amount_expected')
+        # read_only_fields = ('amount_expected', )

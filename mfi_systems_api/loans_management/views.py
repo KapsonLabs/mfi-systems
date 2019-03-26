@@ -3,7 +3,7 @@ import datetime
 from rest_framework import generics
 from members.models import GroupMember
 from .models import Loans, LoanCycles
-from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer, LoanCycleListSerializer
+from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer, LoanCycleListSerializer, LoanPaymentsSerializer, LoanCycleUpdateSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 
@@ -12,7 +12,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework import permissions
 
-from helpers.helpers import get_object, calculate_next_payment_date, calculate_payment_cycles
+from helpers.helpers import get_object, calculate_next_payment_date, calculate_payment_cycles, calculate_balance
 
 from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
 
@@ -140,6 +140,7 @@ class LoanDisbursement(generics.UpdateAPIView):
                 cycles = calculate_payment_cycles(int(instance.expected_duration), instance.loan_cycle_frequency, float(instance.loan_balance_to_pay), instance.next_payment_date)
                 for cycle in cycles:
                     cycle['related_loan'] = pk
+                    cycle['loan_balance'] = instance.loan_balance_to_pay
                     loan_cycle = LoanCycleSerializer(data=cycle)
                     loan_cycle.is_valid(raise_exception=True)
                     loan_cycle.save()
@@ -158,9 +159,34 @@ class LoanCyclesView(APIView):
     def get(self, request, pk, format=None):
         cycles=LoanCycles.objects.all()
         loan_group = get_object(Loans, pk)
-        print(loan_group)
         loan_cycles = cycles.filter(related_loan=loan_group)
-        print(loan_cycles)
         serializer = LoanCycleListSerializer(loan_cycles, many=True)
         data_dict = {"data":serializer.data, "status":200}
         return Response(data_dict, status=status.HTTP_200_OK)
+
+class LoanPaymentsView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, pk ,format=None):
+        loan_cycle_payment = LoanPaymentsSerializer(data=request.data)
+        related_loan_cycle = get_object(LoanCycles, pk)
+        if loan_cycle_payment.is_valid():
+            loan_cycle_payment.save(related_loan_cycle=related_loan_cycle)
+
+            balance=calculate_balance(related_loan_cycle.amount_expected, int(request.data['amount_paid']))
+            loan_balance=related_loan_cycle.loan_balance - int(request.data['amount_paid'])
+            if balance > 0:
+                cycle_status = 'Pending'
+            else:
+                cycle_status = 'Paid'
+        
+            cycle_update={'amount_paid':request.data['amount_paid'], 'balance':balance, 'loan_balance':loan_balance, 'cycle_status':cycle_status, 'amount_expected':balance}
+            
+
+            LoanCycles.objects.update_or_create(
+                id=pk, defaults=cycle_update)
+            
+
+            data_dict = {"status":201, "message":"Payment made successfully", "data":loan_cycle_payment.data, "cycle_detail":cycle_update}
+            return Response(data_dict, status=status.HTTP_201_CREATED)
+        return Response(loan_cycle_payment.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -22,4 +22,5 @@ urlpatterns = [
     path('auth/login/', LoginView.as_view(), name="auth-login"),
     path('api/v1/', include('members.urls'), name="member-routes"),
     path('api/v1/', include('loans_management.urls'), name="loans-routes"),
+    path('api/v1/', include('mfi_statistics.urls'), name="mfi-statistics-routes"),
 ]

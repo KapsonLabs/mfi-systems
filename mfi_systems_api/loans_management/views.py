@@ -116,6 +116,25 @@ class LoanStatusUpdate(generics.UpdateAPIView):
             # loan_approver.save(approved_by=request.user)
 
             loan_status_dict={"data":serializer.data, "status":200, "message":"Loan approved successfully, You can now disburse it"}
+        elif request.data['loan_status'] == 'Disapprove' and instance.loan_status==True:
+            loan_status={'loan_status':False}
+            serializer = UpdateLoanStatusSerializer(
+                instance=instance,
+                data=loan_status
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            # loan approval part auditing
+            # loan_approved={'loan_approved':pk, }
+            # loan_approver=LoanApprovalSerializer(
+            #     data=loan_approved,
+            # )
+            
+            # loan_approver.is_valid(raise_exception=True)
+            # loan_approver.save(approved_by=request.user)
+
+            loan_status_dict={"data":serializer.data, "status":200, "message":"Loan disapproved successfully"}
         else:
             loan_status_dict={"status":200, "error":"Loan has already been approved"}
         return Response(loan_status_dict, status=status.HTTP_200_OK)
@@ -160,6 +179,15 @@ class LoanCyclesView(APIView):
         cycles=LoanCycles.objects.all()
         loan_group = get_object(Loans, pk)
         loan_cycles = cycles.filter(related_loan=loan_group)
+
+        cycle_status = self.request.query_params.get('cycle_status', None)
+
+        if cycle_status is not None:
+            if cycle_status=='Pending':
+                loan_cycles = loan_cycles.filter(cycle_status="Pending")
+            elif cycle_status=='Paid':
+                loan_cycles = loan_cycles.filter(cycle_status="Paid")
+
         serializer = LoanCycleListSerializer(loan_cycles, many=True)
         data_dict = {"data":serializer.data, "status":200}
         return Response(data_dict, status=status.HTTP_200_OK)

@@ -15,6 +15,7 @@ class StatisticsView(APIView):
     permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, format=None):
+        registered_members = GroupMember.objects.all().count()
         total_principal = Loans.objects.all().aggregate(principal_amount = Sum('principal_amount'))
         total_interest_expected =  Loans.objects.all().aggregate(loan_balance_to_pay = Sum('loan_balance_to_pay'))
         total_outstanding_open_loans = Loans.objects.all().filter(loan_status=False).count()
@@ -23,6 +24,7 @@ class StatisticsView(APIView):
         unpaid_loans = Loans.objects.all().filter(loan_completed=False).count()
         undisbursed_loans = Loans.objects.all().filter(is_loan_disbursed=False).count()
         statistics={
+            "registered_members":registered_members,
             "total_principal":total_principal['principal_amount'],
             "total_interest_expected":total_interest_expected['loan_balance_to_pay'],
             "total_outstanding_open_loans":total_outstanding_open_loans,

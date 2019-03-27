@@ -43,7 +43,7 @@ class LoanStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Loans
-        fields = ('loan_applicant', 'principal_amount', 'loan_insurance_fee', 'loan_processing_fee', 'loan_cycle_frequency', 'loan_balance_to_pay', 'expected_duration', 'loan_completed', 'loan_status', 'is_loan_disbursed', 'timestamp')
+        fields = ('loan_applicant', 'principal_amount', 'loan_insurance_fee', 'loan_processing_fee', 'next_payment_date', 'loan_cycle_frequency', 'loan_balance_to_pay', 'expected_duration', 'loan_completed', 'loan_status', 'is_loan_disbursed', 'timestamp')
 
 class UpdateLoanStatusSerializer(serializers.ModelSerializer):
     class Meta:

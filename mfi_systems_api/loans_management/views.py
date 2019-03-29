@@ -3,7 +3,7 @@ import datetime
 from rest_framework import generics
 from members.models import GroupMember
 from .models import Loans, LoanCycles
-from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer, LoanCycleListSerializer, LoanPaymentsSerializer, LoanCycleUpdateSerializer
+from .serializers import LoansSerializer, LoanStatusSerializer, UpdateLoanStatusSerializer, DisburseLoanSerializer, LoanCycleSerializer, LoanApprovalSerializer, LoanDisbursalSerializer, LoanCycleListSerializer, LoanPaymentsSerializer, LoanCycleUpdateSerializer,ShortGroupMemberSerializer, LoansCreateSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 
@@ -26,6 +26,7 @@ class LoansList(APIView):
         related_links = 'links'
         loan_status = self.request.query_params.get('status', None)
         loans = Loans.objects.all()
+
         if loan_status is not None:
             if loan_status=='unapproved':
                 loans = loans.filter(loan_status=False)
@@ -39,12 +40,12 @@ class LoansList(APIView):
             pass
 
         serializer = LoansSerializer(loans, many=True)
-        data_dict = {"status":200, "links":related_links, "data":serializer.data}
+        data_dict = {"status":200, "links":related_links, "data":serializer.data,}
         return Response(data_dict, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         # request.data['responsible_loan_officer']=request.user
-        loan = LoansSerializer(data=request.data)
+        loan = LoansCreateSerializer(data=request.data)
         if loan.is_valid():
             loan.save(responsible_loan_officer=self.request.user)
             data_dict = {"status":201, "data":loan.data}

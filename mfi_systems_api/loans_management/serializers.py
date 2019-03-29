@@ -3,6 +3,12 @@ from .models import Loans, LoanCycles, LoanApproval, LoanDisbursal, LoanPayments
 from members.serializers import GroupMemberSerializer, ShortGroupMemberSerializer, ShortMemberSerializer
 from accounts.serializers import UserSerializer
 
+class LoansCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Loans
+        fields = ('id' ,'principal_amount', 'interest_rate', 'loan_type', 'loan_insurance_fee', 'loan_processing_fee', 'loan_cycle_frequency', 'loan_balance_to_pay', 'expected_duration' ,'loan_purpose', 'guarantor1', 'guarantor2', 'expected_income_corebznss', 'expected_profit_corebznss', 'corebznss_comment', 'loan_completed', 'loan_status', 'is_loan_disbursed', 'timestamp', 'responsible_loan_officer', 'loan_applicant')
+
 class LoansSerializer(serializers.ModelSerializer):
     responsible_loan_officer = UserSerializer(read_only=True)
     loan_applicant = ShortGroupMemberSerializer(read_only=True)
@@ -10,25 +16,17 @@ class LoansSerializer(serializers.ModelSerializer):
     class Meta:
         model = Loans
         fields = ('id' ,'principal_amount', 'interest_rate', 'loan_type', 'loan_insurance_fee', 'loan_processing_fee', 'loan_cycle_frequency', 'loan_balance_to_pay', 'expected_duration' ,'loan_purpose', 'guarantor1', 'guarantor2', 'expected_income_corebznss', 'expected_profit_corebznss', 'corebznss_comment', 'loan_completed', 'loan_status', 'is_loan_disbursed', 'timestamp', 'responsible_loan_officer', 'loan_applicant')
+        
 
     def create(self, validated_data):
         loan = super(LoansSerializer, self).create(validated_data)
         loan.interest_rate=0.1
+        print(validated_data['loan_applicant'])
         loan.loan_insurance_fee=(float(validated_data['principal_amount'])*0.01)
         loan.loan_processing_fee=(float(validated_data['principal_amount'])*0.01)
         loan.loan_balance_to_pay=(float(validated_data['principal_amount'])*0.1)+(float(validated_data['principal_amount']))
         loan.save()
         return loan
-
-    # def to_representation(self, obj):
-    #     # get the original representation
-    #     loan_representation = super(LoansSerializer, self).to_representation(obj)
-
-    #     # remove 'url' field if mobile request
-    #     loan_representation.pop('loan_applicant')
-
-    #     # return the modified representation
-    #     return loan_representation
 
 class ShortLoanSerializer(serializers.ModelSerializer):
     loan_applicant = ShortMemberSerializer(read_only=True)

@@ -1,6 +1,7 @@
 from rest_framework import generics
-from .models import LoanGroup, GroupMember
-from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer
+from .models import LoanGroup, GroupMember, SavingsAccount, SharesAccount
+from institution.models import InstitutionSettings
+from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer, MemberPaymentsSerializer, SavingsAccountSerializer, SharesAccountSerializer
 from accounts.serializers import UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
@@ -10,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from rest_framework import status
 from rest_framework import permissions
+from helpers.helpers import get_object, generate_account_number, send_sms
 from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
 
 class GroupList(APIView):
@@ -104,6 +106,19 @@ class UserDetail(APIView):
         data_dict = {"data":serializer.data, "status":200}
         return Response(data_dict, status=status.HTTP_200_OK)    
 
+class MemberFeesPayment(APIView):
+    """
+    Get the member fees to be paid on registration
+    """
+    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+
+    def get(self, request, pk, format=None):
+        group = get_object(LoanGroup, pk)
+        institution_settings = get_object(InstitutionSettings, group.institution_id.pk)
+        payment_serializer = MemberPaymentsSerializer(institution_settings)
+        data_dict = {"fees_to_pay":payment_serializer.data, "status":200}
+        return Response(data_dict, status=status.HTTP_200_OK)
+
 
 class MemberList(APIView):
     """
@@ -120,9 +135,43 @@ class MemberList(APIView):
         member_serializer = GroupMemberSerializer(data=request.data)
         if member_serializer.is_valid():
             member_serializer.save()
-            data_dict = {"status":201, "data":member_serializer.data}
+            #create savings and shares accounts
+            savings_account_number = generate_account_number(member_serializer.data['id'], "savings")
+            savings_account = {
+                'group_member_related':member_serializer.data['id'],
+                'account_number': savings_account_number
+                # 'account_balance':0,
+                # 'running_balance':0,
+                # 'interest_accrued':0
+            }
+            savings_account_creation = SavingsAccountSerializer(data=savings_account)
+            savings_account_creation.is_valid(raise_exception=True)
+            savings_account_creation.save()
+            
+            #create shares account
+            shares_account_number = generate_account_number(member_serializer.data['id'], 'shares')
+            shares_account = {
+                'group_member_related':member_serializer.data['id'],
+                'account_number': shares_account_number
+                # 'account_balance':0,
+                # 'running_balance':0,
+                # 'interest_accrued':0
+            }
+            shares_account_creation = SharesAccountSerializer(data=shares_account)
+            shares_account_creation.is_valid(raise_exception=True)
+            shares_account_creation.save()
+
+            #send twilio sms with registration details
+            phone_number = "{}{}".format(member_serializer.data['phone_dialing_code'], member_serializer.data['phone_number'])
+            message = "Welcome to MFI, Your savings account Number is {} with a balance of {} shs and your shares account Number is {} with a balance of {} shs".format(savings_account_number, 0, shares_account_number, 0)
+            try:
+                send_sms(phone_number, message)
+            except:
+                print("Message Not sending")
+            data_dict = {"status":201, "data":member_serializer.data, "savings_account":savings_account, "shares_account":shares_account}
             return Response(data_dict, status=status.HTTP_201_CREATED)
         return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class MemberDetail(APIView):
     """

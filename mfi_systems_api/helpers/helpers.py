@@ -3,6 +3,9 @@ GLOBAL Helper methods
 """
 import datetime
 from django.http import Http404
+from django.conf import settings
+from twilio.rest import Client
+
 
 def get_object(model, pk):
     try:
@@ -45,3 +48,15 @@ def calculate_payment_cycles(expected_duration, cycle_frequency, expected_paymen
 def calculate_balance(larger_amount, smaller_amount):
     result = larger_amount - smaller_amount 
     return result if result > 0 else 0
+
+def generate_account_number(id, account_type):
+    if account_type == "savings":
+        return "SAC{}{}SA".format(70, 00000000+id)
+    else:
+        return "SAC{}{}SH".format(80, 00000000+id)
+
+
+def send_sms(to, message):
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    return client.messages.create(to=to, from_='+13092166584', body=message)
+    

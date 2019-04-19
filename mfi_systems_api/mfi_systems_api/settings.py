@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'loans_management',
     'mfi_statistics',
     'corsheaders',
+    'institution',
 ]
 
 MIDDLEWARE = [
@@ -189,4 +190,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+MEDIA_URL = '/media/'
+
 AUTH_USER_MODEL = 'accounts.User'
+
+TWILIO_ACCOUNT_SID = 'ACd15015ddd8cca1e5bf7381a469ad6800'
+TWILIO_AUTH_TOKEN = '57e76a68c06fca078e38139f4418b20d'

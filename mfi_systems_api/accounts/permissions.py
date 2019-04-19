@@ -9,15 +9,11 @@ class BranchManagerPermissions(BasePermission):
         return is_allowed_user
 
 class LoanOfficerPermissions(BasePermission):
-    allowed_user_roles = (User.is_loan_officer, User.is_active)
 
     def has_permission(self, request, view):
-        is_allowed_user = request.user in self.allowed_user_roles
-        return is_allowed_user
+        return request.user.is_loan_officer and request.user.is_active
 
 class LoanClientPermissions(BasePermission):
-    allowed_user_roles = (User.is_client, User.is_active)
 
     def has_permission(self, request, view):
-        is_allowed_user = request.user in self.allowed_user_roles
-        return is_allowed_user
+        return request.user.is_client and request.user.active

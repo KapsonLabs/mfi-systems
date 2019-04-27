@@ -21,7 +21,6 @@ class LoansSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         loan = super(LoansSerializer, self).create(validated_data)
         loan.interest_rate=0.1
-        print(validated_data['loan_applicant'])
         loan.loan_insurance_fee=(float(validated_data['principal_amount'])*0.01)
         loan.loan_processing_fee=(float(validated_data['principal_amount'])*0.01)
         loan.loan_balance_to_pay=(float(validated_data['principal_amount'])*0.1)+(float(validated_data['principal_amount']))
@@ -73,7 +72,7 @@ class LoanDisbursalSerializer(serializers.ModelSerializer):
 class LoanPaymentsSerializer(serializers.ModelSerializer):
     class Meta:
         model=LoanPayments
-        fields=('id', 'amount_paid', 'fined_amount', 'comment', 'date_paid')
+        fields=('id', 'amount_paid', 'fined_amount', 'comment', 'transaction_status' ,'date_paid')
         read_only_fields = ('related_loan_cycle', )
 
 class LoanCycleListSerializer(serializers.ModelSerializer):

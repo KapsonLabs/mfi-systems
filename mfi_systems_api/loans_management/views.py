@@ -198,24 +198,39 @@ class LoanPaymentsView(APIView):
 
     def post(self, request, pk ,format=None):
         loan_cycle_payment = LoanPaymentsSerializer(data=request.data)
+        #get loan cycle
         related_loan_cycle = get_object(LoanCycles, pk)
+        #get total loan cycles
+        loan_id=related_loan_cycle.related_loan.id
+        total_cycles = LoanCycles.objects.filter(related_loan=loan_id).filter(cycle_status="Unpaid")
+    
         if loan_cycle_payment.is_valid():
-            loan_cycle_payment.save(related_loan_cycle=related_loan_cycle)
+            if total_cycles.count() > 1:
+                #check prevailing cycle status
+                if related_loan_cycle.cycle_status == "Unpaid":
+                    loan_cycle_payment.save(related_loan_cycle=related_loan_cycle, transaction_status=True)
 
-            balance=calculate_balance(related_loan_cycle.amount_expected, int(request.data['amount_paid']))
-            loan_balance=related_loan_cycle.loan_balance - int(request.data['amount_paid'])
-            if balance > 0:
-                cycle_status = 'Pending'
+                    balance=calculate_balance(related_loan_cycle.amount_expected, int(request.data['amount_paid']))
+                    loan_balance=related_loan_cycle.loan_balance - int(request.data['amount_paid'])
+                    if balance > 0:
+                        cycle_status = 'Unpaid'
+                    else:
+                        cycle_status = 'Paid'
+                
+                    cycle_update={'amount_paid':request.data['amount_paid'], 'balance':balance, 'loan_balance':loan_balance, 'cycle_status':cycle_status, 'amount_expected':balance}
+                    
+                    #update loan cycle with new defaults on payment
+                    LoanCycles.objects.update_or_create(
+                        id=pk, defaults=cycle_update)
+                    
+
+                    data_dict = {"status":201, "message":"Payment made successfully", "data":loan_cycle_payment.data, "cycle_detail":cycle_update}
+                    return Response(data_dict, status=status.HTTP_201_CREATED)
+                else:
+                    loan_cycle_payment.save(related_loan_cycle=related_loan_cycle, comment="Transaction Failed")
+                    data_dict = {"status":400, "message":"Payment was not made to cycle because cycle is fully paid out", "data":loan_cycle_payment.data}
+                    return Response(data_dict, status=status.HTTP_400_BAD_REQUEST)
             else:
-                cycle_status = 'Paid'
-        
-            cycle_update={'amount_paid':request.data['amount_paid'], 'balance':balance, 'loan_balance':loan_balance, 'cycle_status':cycle_status, 'amount_expected':balance}
-            
-
-            LoanCycles.objects.update_or_create(
-                id=pk, defaults=cycle_update)
-            
-
-            data_dict = {"status":201, "message":"Payment made successfully", "data":loan_cycle_payment.data, "cycle_detail":cycle_update}
-            return Response(data_dict, status=status.HTTP_201_CREATED)
+                #code to implement the cycle and loan completion if the payment is complete 
+                pass
         return Response(loan_cycle_payment.errors, status=status.HTTP_400_BAD_REQUEST)

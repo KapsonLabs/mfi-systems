@@ -80,7 +80,8 @@ class LoanPayments(models.Model):
     """ 
     related_loan_cycle  = models.ForeignKey(LoanCycles, on_delete=models.CASCADE, null=False, blank=False)
     amount_paid         = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
-    received_by         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_confirmation_officer', null=True, blank=True) 
+    received_by         = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payment_confirmation_officer', null=True, blank=True)
+    transaction_status  = models.BooleanField(default=False) 
     balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)  
     fined_amount        = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
     comment             = models.TextField()

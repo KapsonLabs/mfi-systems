@@ -30,12 +30,14 @@ class InstitutionSettings(models.Model):
     savings_interest               = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     savings_interest_calculator    = models.CharField(max_length=20, blank=True, null=True, choices=INTEREST_CALCULATORS)
     savings_interest_frequency     = models.CharField(max_length=20, blank=True, null=True, choices=FREQUENCY)
+    maximum_savings_to_withdraw    = models.DecimalField(max_digits=20, decimal_places=3 ,default=100)
+    maximum_monthly_withdraws      = models.IntegerField(default=0)
     loan_types_provided            = models.CharField(max_length=15, blank=True, null=True, choices=LOAN_TYPES) 
     quick_loan_interest_rate       = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     small_loan_interest_rate       = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     big_loan_interest_rate         = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     quick_loan_limit               = models.DecimalField(max_digits=20, decimal_places=3, default=0)
-    quick_loan_repayment_limit     = models.IntegerField() #in months
+    quick_loan_repayment_limit     = models.IntegerField(default=0) #in months
     percentage_of_savings_rq_loan  = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     loan_interest_rate             = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     small_loan_interest_calculator = models.CharField(max_length=20, blank=True, null=True, choices=LOAN_CALCULATORS)

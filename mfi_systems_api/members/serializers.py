@@ -1,4 +1,6 @@
-from members.models import LoanGroup, GroupMember, SavingsAccount, SharesAccount
+import uuid
+
+from members.models import LoanGroup, GroupMember, SavingsAccount, SharesAccount, SavingsPayments, SharesPayments
 from accounts.serializers import UserSerializer
 from accounts.models import User
 from institution.models import InstitutionSettings, Institution
@@ -68,6 +70,14 @@ class MemberPaymentsSerializer(serializers.ModelSerializer):
         model = InstitutionSettings
         fields = ('membership_fee', 'share_price')
 
+class MemberSavingsPaymentsSerializer(serializers.ModelSerializer):
+    """
+    A serializer that returns the savings payments to be made.
+    """
+    class Meta:
+        model = InstitutionSettings
+        fields = ("savings_amount",)
+
 
 class ShortGroupMemberSerializer(serializers.ModelSerializer):
     """
@@ -100,6 +110,7 @@ class SavingsAccountSerializer(serializers.ModelSerializer):
         model = SavingsAccount
         fields = ('id', 'group_member_related', 'account_number', 'account_balance', 'running_balance', 'interest_accrued')
 
+
 class SharesAccountSerializer(serializers.ModelSerializer):
     """
     A shares account serializer
@@ -108,3 +119,36 @@ class SharesAccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = SharesAccount
         fields = ('id', 'group_member_related', 'account_number', 'account_balance', 'running_balance', 'interest_accrued')
+
+class SavingsPaymentsSerializer(serializers.ModelSerializer):
+    """
+    A savings payment's serializer 
+    """
+
+    class Meta:
+        model = SavingsPayments
+        fields = ('id', 'savings_account_related', 'transaction_number', 'amount_paid')
+
+    def validate_amount_paid(self, value):
+        savings_account = get_object(SavingsAccount, self.initial_data['savings_account_related'])
+        group = get_object(LoanGroup, savings_account.group_member_related.group_id.pk)
+        institution_settings = get_object(InstitutionSettings, group.institution_id.pk)
+        if value < institution_settings.savings_amount:
+            raise serializers.ValidationError("Saving fee not sufficient for the cycle")
+        return value
+
+    def create(self, validated_data):
+        savings_payment = super(SavingsPaymentsSerializer, self).create(validated_data)
+        savings_payment.transaction_number = uuid.uuid4()
+        savings_payment.save()
+        return savings_payment
+
+
+class SharesPaymentsSerializer(serializers.ModelSerializer):
+    """
+    A shares payment's serializer
+    """
+
+    class Meta:
+        model = SharesPayments
+        fields = ('id', 'shares_account_related', 'transaction_number', 'amount_paid', 'shares_bought')

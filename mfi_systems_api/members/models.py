@@ -6,7 +6,7 @@ class LoanGroup(models.Model):
     """
     Loan Group model
     """
-    institution_id  = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='institution_group')
+    institution_id  = models.ForeignKey(Institution, on_delete=models.CASCADE, related_name='institution_group', default=1)
     group_name      = models.CharField(max_length=15)
     date_created    = models.DateTimeField(auto_now_add=True)
 
@@ -50,9 +50,9 @@ class SavingsAccount(models.Model):
     """
     group_member_related        = models.ForeignKey(GroupMember, on_delete=models.CASCADE, related_name="savings_account_owner")
     account_number              = models.CharField(max_length=20)
-    account_balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
-    running_balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
-    interest_accrued            = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
+    account_balance             = models.DecimalField(max_digits=20, decimal_places=3, default=0)
+    running_balance             = models.DecimalField(max_digits=20, decimal_places=3, default=0)
+    interest_accrued            = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     date_created                = models.DateTimeField(auto_now_add=True)
 
 class SharesAccount(models.Model):
@@ -61,8 +61,28 @@ class SharesAccount(models.Model):
     """
     group_member_related        = models.ForeignKey(GroupMember, on_delete=models.CASCADE, related_name="shares_account_owner")
     account_number              = models.CharField(max_length=20)
-    account_balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
-    running_balance             = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
-    interest_accrued            = models.DecimalField(max_digits=20, decimal_places=3, blank=True, null=True)
+    shares_owned                = models.IntegerField(default=0)
+    account_balance             = models.DecimalField(max_digits=20, decimal_places=3, default=0)
+    running_balance             = models.DecimalField(max_digits=20, decimal_places=3, default=0)
+    interest_accrued            = models.DecimalField(max_digits=20, decimal_places=3, default=0)
     date_created                = models.DateTimeField(auto_now_add=True)
+
+class SavingsPayments(models.Model):
+    """
+    Savings Payments Model
+    """
+    savings_account_related     = models.ForeignKey(SavingsAccount, on_delete=models.CASCADE, related_name="savings_account_related")
+    transaction_number          = models.CharField(max_length=100, null=True, blank=True)
+    amount_paid                 = models.DecimalField(max_digits=20, decimal_places=3)
+    date_paid                   = models.DateTimeField(auto_now_add=True)
+
+class SharesPayments(models.Model):
+    """
+    Shares Payments Model
+    """
+    shares_account_related      = models.ForeignKey(SharesAccount, on_delete=models.CASCADE, related_name="savings_account_related")
+    transaction_number          = models.CharField(max_length=100, null=True, blank=True)
+    amount_paid                 = models.DecimalField(max_digits=20, decimal_places=3)
+    shares_bought               = models.IntegerField(null=True, blank=True)
+    date_paid                   = models.DateTimeField(auto_now_add=True)
 

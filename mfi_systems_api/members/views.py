@@ -1,7 +1,7 @@
 from rest_framework import generics
 from .models import LoanGroup, GroupMember, SavingsAccount, SharesAccount
 from institution.models import InstitutionSettings
-from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer, MemberPaymentsSerializer, SavingsAccountSerializer, SharesAccountSerializer
+from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer, MemberPaymentsSerializer, SavingsAccountSerializer, SharesAccountSerializer, SharesPaymentsSerializer, SavingsPaymentsSerializer, MemberSavingsPaymentsSerializer
 from accounts.serializers import UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
@@ -140,9 +140,9 @@ class MemberList(APIView):
             savings_account = {
                 'group_member_related':member_serializer.data['id'],
                 'account_number': savings_account_number
-                # 'account_balance':0,
-                # 'running_balance':0,
-                # 'interest_accrued':0
+                #'account_balance':member_serializer.data[''],
+                #'running_balance':0,
+                #'interest_accrued':0
             }
             savings_account_creation = SavingsAccountSerializer(data=savings_account)
             savings_account_creation.is_valid(raise_exception=True)
@@ -152,10 +152,10 @@ class MemberList(APIView):
             shares_account_number = generate_account_number(member_serializer.data['id'], 'shares')
             shares_account = {
                 'group_member_related':member_serializer.data['id'],
-                'account_number': shares_account_number
-                # 'account_balance':0,
-                # 'running_balance':0,
-                # 'interest_accrued':0
+                'account_number': shares_account_number,
+                'account_balance': member_serializer.data['shares_fee'],
+                'running_balance': member_serializer.data['shares_fee'],
+                #'interest_accrued':0
             }
             shares_account_creation = SharesAccountSerializer(data=shares_account)
             shares_account_creation.is_valid(raise_exception=True)
@@ -163,7 +163,7 @@ class MemberList(APIView):
 
             #send twilio sms with registration details
             phone_number = "{}{}".format(member_serializer.data['phone_dialing_code'], member_serializer.data['phone_number'])
-            message = "Welcome to MFI, Your savings account Number is {} with a balance of {} shs and your shares account Number is {} with a balance of {} shs".format(savings_account_number, 0, shares_account_number, 0)
+            message = "Welcome to MFI, Savings account Number is {} with balance of {}, Shares Account Number is {} with balance of {} shs".format(savings_account_number, 0, shares_account_number, 0)
             try:
                 send_sms(phone_number, message)
             except:
@@ -186,10 +186,16 @@ class MemberDetail(APIView):
 
     def get(self, request, pk, format=None):
         group_member = self.get_object(pk)
+        savings_account = SavingsAccount.objects.get(group_member_related=group_member)
+        shares_account = SharesAccount.objects.get(group_member_related=group_member)
         serializer = GroupMemberListSerializer(group_member)
+        savings_serializer = SavingsAccountSerializer(savings_account)
+        shares_serializer = SharesAccountSerializer(shares_account)
         data_with_link = dict(serializer.data)
         links = {'loans': 'api/v1/members/{}/loans/'.format(pk)}
         data_with_link['links'] = links
+        data_with_link["savings_account"] = savings_serializer.data
+        data_with_link["shares_account"] = shares_serializer.data
         data_dict = {"status":200, "data":data_with_link}
         return Response(data_dict, status=status.HTTP_200_OK)
 
@@ -213,7 +219,60 @@ class GroupMemberList(APIView):
     permission_classes = (permissions.IsAuthenticated, )
     def get(self, request, pk, format=None):
         group_members = GroupMember.objects.filter(group_id=pk)
-        print(group_members)
         serializer = GroupMemberSerializer(group_members, many=True)
         data_dict = {"status":200, "data":serializer.data}
         return Response(data_dict, status=status.HTTP_200_OK)
+
+
+class SavingsToBePaid(APIView):
+    """
+    Return amount of money to be paid and next payment date.
+    """
+    permissions_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    def get(self, request, pk, format=None):
+        group = get_object(LoanGroup, pk)
+        institution_settings = get_object(InstitutionSettings, group.institution_id.pk)
+        savings_payment_expected = MemberSavingsPaymentsSerializer(institution_settings)
+        data_dict = {"amount_to_pay":savings_payment_expected.data, "status":200}
+        return Response(data_dict, status=status.HTTP_200_OK)
+
+class CheckAccountBalances(APIView):
+    pass
+
+
+class SavingsPaymentList(APIView):
+    """
+    List and create savings payments
+    """
+    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+
+    def post(self, request, format=None):
+        savings_payment_serializer = SavingsPaymentsSerializer(data=request.data)
+        if savings_payment_serializer.is_valid():
+            savings_payment_serializer.save()
+            #add amount to savings account
+            savings_account = get_object(SavingsAccount, savings_payment_serializer.data['savings_account_related'])
+
+            saving_amount_update = {
+                "account_balance": float(savings_account.account_balance)+float(savings_payment_serializer.data['amount_paid']),
+                "running_balance": float(savings_account.running_balance)+float(savings_payment_serializer.data['amount_paid']),
+            }
+
+            SavingsAccount.objects.update_or_create(
+                        id=savings_account.pk, defaults=saving_amount_update)
+
+            savings_account_updated = SavingsAccountSerializer(savings_account)
+
+            #send twilio sms with payment details
+            phone_number = "{}{}".format(savings_account.group_member_related.phone_dialing_code, savings_account.group_member_related.phone_number)
+            message = "You have deposited {} on Savings account Number {}. Your Balance is {}".format(savings_payment_serializer.data['amount_paid'], savings_account_updated.data['account_number'], savings_account_updated.data['account_balance'])
+            try:
+                send_sms(phone_number, message)
+            except:
+                print("Message Not sending")
+
+            data_dict = {"status":201, "data":savings_payment_serializer.data, "savings_account": savings_account_updated.data}
+            return Response(data_dict, status=status.HTTP_201_CREATED)
+        return Response(savings_payment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+

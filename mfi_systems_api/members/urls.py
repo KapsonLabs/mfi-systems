@@ -9,5 +9,7 @@ urlpatterns = [
     path('institutions/groups/members/', views.MemberList.as_view(), name="group-members"),
     path('institutions/groups/members/<int:pk>/', views.MemberDetail.as_view(), name="group-members-detail"),
     path('institutions/groups/<int:pk>/memberfeestopay/', views.MemberFeesPayment.as_view(), name="group-member-fees-to-pay"),
-    path('groups/<int:pk>/members/', views.GroupMemberList.as_view(), name="groups-members-list"),
+    path('institutions/groups/<int:pk>/members/', views.GroupMemberList.as_view(), name="groups-members-list"),
+    path('institutions/groups/<int:pk>/members/savingstopay/', views.SavingsToBePaid.as_view(), name='group-savings-to-be-paid'),
+    path('institutions/groups/members/savings/', views.SavingsPaymentList.as_view(), name="members-savings-list"),
 ]

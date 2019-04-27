@@ -51,9 +51,9 @@ def calculate_balance(larger_amount, smaller_amount):
 
 def generate_account_number(id, account_type):
     if account_type == "savings":
-        return "SAC{}{}SA".format(70, 00000000+id)
+        return "SAC{}{}SA".format(70, 100000000+id)
     else:
-        return "SAC{}{}SH".format(80, 00000000+id)
+        return "SAC{}{}SH".format(80, 100000000+id)
 
 
 def send_sms(to, message):

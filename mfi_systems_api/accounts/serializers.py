@@ -15,6 +15,12 @@ class UserSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class UserDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id','username', 'first_name', 'last_name', 'email', 'is_institution_administrator', 'is_loan_officer', 'is_client')
+
 class TokenSerializer(serializers.Serializer):
     """
     This serializer serializes the token data

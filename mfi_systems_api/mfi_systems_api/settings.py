@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'loans_management',
     'mfi_statistics',
     'corsheaders',
+    'institution',
 ]
 
 MIDDLEWARE = [
@@ -103,12 +104,12 @@ JWT_AUTH = {
     'JWT_VERIFY': True,
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LEEWAY': 0,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=200000),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=600000),
     'JWT_AUDIENCE': None,
     'JWT_ISSUER': None,
 
-    'JWT_ALLOW_REFRESH': False,
-    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=21),
 
     'JWT_AUTH_HEADER_PREFIX': 'Bearer',
     'JWT_AUTH_COOKIE': None,
@@ -142,7 +143,7 @@ WSGI_APPLICATION = 'mfi_systems_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mfi_db',
+        'NAME': 'mfi_db_new',
         'USER': 'djangoappguy',
         'PASSWORD': 'django1234',
         'HOST': 'localhost',
@@ -189,4 +190,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+MEDIA_URL = '/media/'
+
 AUTH_USER_MODEL = 'accounts.User'
+
+TWILIO_ACCOUNT_SID = 'ACd15015ddd8cca1e5bf7381a469ad6800'
+TWILIO_AUTH_TOKEN = '57e76a68c06fca078e38139f4418b20d'

@@ -6,11 +6,12 @@ from .choices import FREQUENCY, ROLES, LOAN_CALCULATORS, INTEREST_CALCULATORS, L
 
 class Institution(models.Model):
 
-    created_by                      = models.ForeignKey(User, on_delete=models.CASCADE, related_name='institution_creator')
+    created_by                      = models.OneToOneField(User, on_delete=models.CASCADE, related_name='institution_creator')
     institution_name                = models.CharField(max_length=250)
     institution_type                = models.CharField(max_length=25, choices=INSTITUTION_TYPE)
     location                        = models.CharField(max_length=25)
     certificate_of_incoporation     = models.ImageField(upload_to='institutions/', blank=True, null=True)
+    is_institution_active           = models.BooleanField(default=False)
     date_of_incoporation            = models.DateField(auto_now_add=False, blank=True, null=True)
     date_created                    = models.DateTimeField(auto_now_add=True)
 
@@ -56,3 +57,6 @@ class InstitutionStaff(models.Model):
     staff_role                     = models.CharField(max_length=20, blank=True, null=True, choices=ROLES)
     staff_responsibility           = models.TextField()
     date_created                   = models.DateTimeField(auto_now_add=True)
+
+class InstitutionTransactions(models.Model):
+    pass

@@ -1,6 +1,6 @@
 import uuid
 
-from members.models import LoanGroup, GroupMember, SavingsAccount, SharesAccount, SavingsPayments, SharesPayments
+from members.models import LoanGroup, GroupMember, SavingsAccount, SharesAccount, SavingsPayments, SharesPayments, SavingsWithdrawal
 from accounts.serializers import UserSerializer
 from accounts.models import User
 from institution.models import InstitutionSettings, Institution
@@ -21,7 +21,7 @@ class GroupMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GroupMember
-        fields = ('id', 'user_id' ,'group_id', 'date_of_birth', 'gender', 'membership_fee', 'shares_fee', 'employment', 'phone_dialing_code', 'phone_number', 'marital_status', 'spouse_full_name', 'id_number', 'id_attachment_front', 'id_attachment_back', 'profile_picture', 'present_village', 'present_subcounty', 'present_county', 'present_division', 'present_district', 'date_created')
+        fields = ('id' ,'group_id', 'date_of_birth', 'gender', 'membership_fee', 'shares_fee', 'employment', 'phone_dialing_code', 'phone_number', 'marital_status', 'spouse_full_name', 'id_number', 'id_attachment_front', 'id_attachment_back', 'profile_picture', 'present_village', 'present_subcounty', 'present_county', 'present_division', 'present_district', 'date_created')
 
     def validate_membership_fee(self, value):
         """
@@ -152,3 +152,24 @@ class SharesPaymentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = SharesPayments
         fields = ('id', 'shares_account_related', 'transaction_number', 'amount_paid', 'shares_bought')
+
+class SavingsWithdrawalSerializer(serializers.ModelSerializer):
+    """
+    A savings withdrawal serializer
+    """
+
+    class Meta:
+        model = SavingsWithdrawal
+        fields = ("amount_withdrawn", )
+
+    def validate_amount_withdrawn(self, value):
+        savings_account_related = SavingsAccount.objects.get(account_number=self.initial_data['account_number'])
+        if value > savings_account_related.account_balance:
+            raise serializers.ValidationError("Your account balance is insufficient to make the withdraw")
+        return value
+
+    def create(self, validated_data):
+        savings_withdrawal = super(SavingsWithdrawalSerializer, self).create(validated_data)
+        savings_withdrawal.transaction_number = uuid.uuid4()
+        savings_withdrawal.save()
+        return savings_withdrawal

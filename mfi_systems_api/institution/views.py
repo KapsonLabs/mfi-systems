@@ -1,4 +1,6 @@
 from rest_framework import generics
+from django.db.utils import IntegrityError 
+
 from .models import Institution, InstitutionSettings, InstitutionStaff
 from .serializers import InstitutionCreateSerializer, InstitutionSettingsCreateSerializer, InstitutionStaffCreateSerializer
 from accounts.serializers import UserSerializer
@@ -23,9 +25,12 @@ class InstitutionList(APIView):
     def post(self, request, format=None):
         serializer = InstitutionCreateSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(created_by=self.request.user)
-            data_dict = {"status":201, "data":serializer.data}
-            return Response(data_dict, status=status.HTTP_201_CREATED)
+            try:
+                serializer.save(created_by=self.request.user, is_institution_active=True)
+                data_dict = {"status":201, "data":serializer.data}
+                return Response(data_dict, status=status.HTTP_201_CREATED)
+            except:
+                return Response({'Error':'User has already created an institution'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class InstitutionDetail(APIView):

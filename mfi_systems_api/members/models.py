@@ -86,3 +86,13 @@ class SharesPayments(models.Model):
     shares_bought               = models.IntegerField(null=True, blank=True)
     date_paid                   = models.DateTimeField(auto_now_add=True)
 
+class SavingsWithdrawal(models.Model):
+    """
+    Savings Withdrawal Model
+    """
+    savings_account_related     = models.ForeignKey(SavingsAccount, on_delete=models.CASCADE, related_name="savings_account_withdrawal")
+    transaction_number          = models.CharField(max_length=100, null=True, blank=True)
+    amount_withdrawn            = models.DecimalField(max_digits=20, decimal_places=3)
+    date_withdrawn              = models.DateTimeField(auto_now_add=True)
+
+

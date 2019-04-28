@@ -1,7 +1,9 @@
 from rest_framework import generics
+from django.http import QueryDict
+
 from .models import LoanGroup, GroupMember, SavingsAccount, SharesAccount
 from institution.models import InstitutionSettings
-from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer, MemberPaymentsSerializer, SavingsAccountSerializer, SharesAccountSerializer, SharesPaymentsSerializer, SavingsPaymentsSerializer, MemberSavingsPaymentsSerializer
+from .serializers import LoanGroupSerializer, GroupMemberSerializer, GroupMemberListSerializer, MemberPaymentsSerializer, SavingsAccountSerializer, SharesAccountSerializer, SharesPaymentsSerializer, SavingsPaymentsSerializer, MemberSavingsPaymentsSerializer, SavingsWithdrawalSerializer
 from accounts.serializers import UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
@@ -132,9 +134,36 @@ class MemberList(APIView):
         return Response(data_dict, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
-        member_serializer = GroupMemberSerializer(data=request.data)
+        member_data = request.data.copy()
+        # try:
+        username    = member_data.pop('username', None)
+        first_name  = member_data.pop('first_name', None)
+        last_name   = member_data.pop('last_name', None)
+        email       = member_data.pop('email', None)
+        password    = member_data.pop('password', None)
+
+        user_data_dict = {
+        'username':username[0],
+        'first_name':first_name[0],
+        'last_name': last_name[0],
+        'email':email[0],
+        'password':password[0],
+        }
+
+        #recreating the query dict
+        user_data_query_dict = QueryDict('', mutable=True)
+        user_data_query_dict.update(user_data_dict)
+
+        #add query dict to user serializer
+        user_account_serializer = UserSerializer(data=user_data_query_dict)
+        user_account_serializer.is_valid(raise_exception=True)
+        user_account_serializer.save()
+
+        user = get_object(User, user_account_serializer.data['id'])
+
+        member_serializer = GroupMemberSerializer(data=member_data)
         if member_serializer.is_valid():
-            member_serializer.save()
+            member_serializer.save(user_id=user)
             #create savings and shares accounts
             savings_account_number = generate_account_number(member_serializer.data['id'], "savings")
             savings_account = {
@@ -147,7 +176,7 @@ class MemberList(APIView):
             savings_account_creation = SavingsAccountSerializer(data=savings_account)
             savings_account_creation.is_valid(raise_exception=True)
             savings_account_creation.save()
-            
+
             #create shares account
             shares_account_number = generate_account_number(member_serializer.data['id'], 'shares')
             shares_account = {
@@ -170,6 +199,9 @@ class MemberList(APIView):
                 print("Message Not sending")
             data_dict = {"status":201, "data":member_serializer.data, "savings_account":savings_account, "shares_account":shares_account}
             return Response(data_dict, status=status.HTTP_201_CREATED)
+            # except:
+            #     print("Failed")
+            #     # return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -261,18 +293,49 @@ class SavingsPaymentList(APIView):
             SavingsAccount.objects.update_or_create(
                         id=savings_account.pk, defaults=saving_amount_update)
 
-            savings_account_updated = SavingsAccountSerializer(savings_account)
+            savings_account_updated = get_object(SavingsAccount, savings_account.pk)
 
             #send twilio sms with payment details
             phone_number = "{}{}".format(savings_account.group_member_related.phone_dialing_code, savings_account.group_member_related.phone_number)
-            message = "You have deposited {} on Savings account Number {}. Your Balance is {}".format(savings_payment_serializer.data['amount_paid'], savings_account_updated.data['account_number'], savings_account_updated.data['account_balance'])
+            message = "You have deposited {} on Savings account Number {}. Your Balance is {}".format(savings_payment_serializer.data['amount_paid'], savings_account_updated.account_number, savings_account_updated.account_balance)
             try:
                 send_sms(phone_number, message)
             except:
                 print("Message Not sending")
 
-            data_dict = {"status":201, "data":savings_payment_serializer.data, "savings_account": savings_account_updated.data}
+            data_dict = {"status":201, "data":savings_payment_serializer.data, "savings_account": savings_account_updated.account_balance}
             return Response(data_dict, status=status.HTTP_201_CREATED)
         return Response(savings_payment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SavingsWithdrawal(APIView):
+    """
+    Withdraw savings from account
+    """
+    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions, )
+
+    def post(self, request):
+        withraw_data = request.data.copy()
+        account_number = withraw_data.pop('account_number')
+        savings_account_related = SavingsAccount.objects.get(account_number=account_number[0])
+
+        savings_withdrawal_serilizer = SavingsWithdrawalSerializer(data=request.data)
+        if savings_withdrawal_serilizer.is_valid():
+            savings_withdrawal_serilizer.save(savings_account_related=savings_account_related)
+
+            saving_amount_update = {
+                "account_balance": float(savings_account.account_balance)-float(savings_payment_serializer.data['amount_paid']),
+                "running_balance": float(savings_account.running_balance)-float(savings_payment_serializer.data['amount_paid']),
+            }
+
+            SavingsAccount.objects.update_or_create(
+                        id=savings_account.pk, defaults=saving_amount_update)
+
+            savings_account_updated = SavingsAccountSerializer(savings_account_related)
+
+            data_dict = {"status":200, "data":savings_withdrawal_serilizer.data}
+            return Response(data_dict, status=status.HTTP_201_CREATED)
+        else:
+            savings_withdraw_dict={"status":400, "error":savings_withdrawal_serilizer.errors}
+        return Response(savings_withdraw_dict, status=status.HTTP_200_OK)
 
 

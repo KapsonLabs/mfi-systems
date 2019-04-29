@@ -39,9 +39,13 @@ class LoginView(generics.CreateAPIView):
             token_serializer.is_valid()
             user_serializer = UserDetailSerializer(user)
             if user.is_institution_administrator == True:
-                related_institution = Institution.objects.get(created_by=user)
-                institution = {"id":related_institution.pk, "institution_status":related_institution.is_institution_active}
-            else:
+                try:
+                    related_institution = Institution.objects.get(created_by=user)
+                    institution = {"id":related_institution.pk, "institution_status":related_institution.is_institution_active}
+                except:
+                    institution = {"status":"No institution created yet"}
+            elif user.is_loan_officer == True:
+                institution = {"status":"Feature not worked on yet"}
                 pass
             login_data = {"user_data":user_serializer.data, "token_data":token_serializer.data, "institution":institution}
             return Response(login_data)

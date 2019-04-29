@@ -158,8 +158,10 @@ class MemberList(APIView):
         user_account_serializer = UserSerializer(data=user_data_query_dict)
         user_account_serializer.is_valid(raise_exception=True)
         user_account_serializer.save()
+        # print(user_account_serializer.data['id'])
 
-        user = get_object(User, user_account_serializer.data['id'])
+        user = User.objects.get(pk=user_account_serializer.data['id'])
+        print(user)
 
         member_serializer = GroupMemberSerializer(data=member_data)
         if member_serializer.is_valid():

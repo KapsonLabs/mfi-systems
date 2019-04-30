@@ -127,8 +127,9 @@ class SavingsPaymentsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SavingsPayments
-        fields = ('id', 'savings_account_related', 'transaction_number', 'amount_paid')
-
+        fields = ('id', 'savings_account_related', 'transaction_number', 'amount_paid', 'date_paid')
+        read_only_fields = ('date_paid', )
+        
     def validate_amount_paid(self, value):
         savings_account = get_object(SavingsAccount, self.initial_data['savings_account_related'])
         group = get_object(LoanGroup, savings_account.group_member_related.group_id.pk)
@@ -173,3 +174,14 @@ class SavingsWithdrawalSerializer(serializers.ModelSerializer):
         savings_withdrawal.transaction_number = uuid.uuid4()
         savings_withdrawal.save()
         return savings_withdrawal
+
+class AccountNumberSerializer(serializers.Serializer):
+    """
+    An account number serializer for checking statuses
+    """
+    account_number = serializers.CharField(max_length=20)
+
+    def validate_amount_number(self, value):
+        if len(value) != 16:
+           raise serializers.ValidationError("Invalid/wrong account number entered")
+        return value 

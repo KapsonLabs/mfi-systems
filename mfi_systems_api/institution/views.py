@@ -4,7 +4,7 @@ from django.http import QueryDict
 
 from .models import Institution, InstitutionSettings, InstitutionStaff
 from .serializers import InstitutionCreateSerializer, InstitutionSettingsCreateSerializer, InstitutionStaffCreateSerializer
-from accounts.serializers import UserSerializer
+from accounts.serializers import UserSerializer, InstitutionUserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from accounts.models import User
@@ -116,17 +116,18 @@ class InstitutionStaffCreate(APIView):
         user_data_query_dict = QueryDict('', mutable=True)
         user_data_query_dict.update(user_data_dict)
 
-        #add query dict to user serializer
-        user_account_serializer = UserSerializer(data=user_data_query_dict)
-        user_account_serializer.is_valid(raise_exception=True)
-        user_account_serializer.save()
-        # print(user_account_serializer.data['id'])
-
-        user = User.objects.get(pk=user_account_serializer.data['id'])
-        print(user)
-
         staff_serializer = InstitutionStaffCreateSerializer(data=staff_data)
         if staff_serializer.is_valid():
+            #add query dict to user serializer
+            user_account_serializer = InstitutionUserSerializer(data=user_data_query_dict)
+            user_account_serializer.is_valid(raise_exception=True)
+            if staff_serializer.validated_data['staff_role'] == 'LOAN_OFFICER':
+                user_account_serializer.save(is_loan_officer=True)
+            else:
+                user_account_serializer.save(is_branch_manager=True)
+
+            user = User.objects.get(pk=user_account_serializer.data['id'])
+        
             staff_serializer.save(user_id=user)
     
             #send twilio sms with registration details

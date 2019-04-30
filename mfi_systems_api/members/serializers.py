@@ -154,6 +154,7 @@ class SharesPaymentsSerializer(serializers.ModelSerializer):
         model = SharesPayments
         fields = ('id', 'shares_account_related', 'transaction_number', 'amount_paid', 'shares_bought')
 
+
 class SavingsWithdrawalSerializer(serializers.ModelSerializer):
     """
     A savings withdrawal serializer

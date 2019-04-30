@@ -370,7 +370,7 @@ class SavingsWithdrawal(APIView):
             except:
                 print("Message Not sending")
 
-            data_dict = {"status":200, "data":savings_withdrawal_serilizer.data}
+            data_dict = {"status":200, "data":savings_withdrawal_serilizer.data, "savings_account": savings_account_updated.account_balance}
             return Response(data_dict, status=status.HTTP_201_CREATED)
         else:
             savings_withdraw_dict={"status":400, "error":savings_withdrawal_serilizer.errors}

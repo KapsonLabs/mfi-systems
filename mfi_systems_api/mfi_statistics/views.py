@@ -1,5 +1,4 @@
 from rest_framework import generics
-from members.models import LoanGroup, GroupMember
 from rest_framework.views import APIView
 from rest_framework import permissions
 from loans_management.models import Loans
@@ -7,6 +6,34 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from django.db.models import Avg, Count, Min, Sum
+from helpers.helpers import get_object
+from institution.models import Institution, InstitutionStaff, InstitutionSettings
+from members.models import LoanGroup, GroupMember, SavingsPayments, SavingsWithdrawal, SavingsAccount, SharesAccount, SharesPayments
+from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions, InstitutionAdministratorAndLoanOfficerPermissions
+
+class InstitutionStatisticsCollections(APIView):
+    """
+    Institution statistics
+    """
+    permission_classes = (permissions.IsAuthenticated, InstitutionAdministratorAndLoanOfficerPermissions)
+
+    def get(self, request, pk, format=None):
+        institution = get_object(Institution, pk)
+        
+        #Hard coding this bitch
+        institution_settings = InstitutionSettings.objects.get(institution_id=institution)
+
+        registered_members      = GroupMember.objects.all().count()
+        total_savings           = SavingsAccount.objects.all().aggregate(account_balance=Sum('account_balance'))
+        total_membership_fee    = float(registered_members) * float(institution_settings.membership_fee)
+        institution_statistics={
+            "registered_members":registered_members,
+            "total_savings":total_savings['account_balance'],
+            "total_membership_fee": total_membership_fee,
+        }
+
+        data_dict = {"status":200, "data":institution_statistics}
+        return Response(data_dict, status=status.HTTP_200_OK)
 
 class StatisticsView(APIView):
     """

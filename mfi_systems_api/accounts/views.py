@@ -6,7 +6,7 @@ from accounts.serializers import TokenSerializer, UserSerializer, UserDetailSeri
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-from institution.models import Institution
+from institution.models import Institution, InstitutionStaff
 
 # Get the JWT settings, add these lines after the import/from lines
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -45,8 +45,9 @@ class LoginView(generics.CreateAPIView):
                 except:
                     institution = {"status":"No institution created yet"}
             elif user.is_loan_officer == True:
-                institution = {"status":"Feature not worked on yet"}
-                pass
+                institution_staff = InstitutionStaff.objects.get(user_id=user)
+                assigned_institution = Institution.objects.get(id=institution_staff.institution_id.pk)
+                institution = {"id":assigned_institution.pk, "institution_status":assigned_institution.is_institution_active}
             login_data = {"user_data":user_serializer.data, "token_data":token_serializer.data, "institution":institution}
             return Response(login_data)
         return Response(status=status.HTTP_404_NOT_FOUND)

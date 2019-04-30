@@ -11,6 +11,7 @@ urlpatterns = [
     path('institutions/groups/<int:pk>/memberfeestopay/', views.MemberFeesPayment.as_view(), name="group-member-fees-to-pay"),
     path('institutions/groups/<int:pk>/members/', views.GroupMemberList.as_view(), name="groups-members-list"),
     path('institutions/groups/<int:pk>/members/savingstopay/', views.SavingsToBePaid.as_view(), name='group-savings-to-be-paid'),
+    path('institutions/groups/members/saving_accounts/', views.SavingsAccountList.as_view(), name='savings-account-lists'),
     path('institutions/groups/members/savings/', views.SavingsPaymentList.as_view(), name="members-savings-list"),
     path('institutions/groups/members/savings_withdraw/', views.SavingsWithdrawal.as_view(), name="members-savings-withdraw"),
 ]

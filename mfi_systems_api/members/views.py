@@ -273,6 +273,18 @@ class SavingsToBePaid(APIView):
 class CheckAccountBalances(APIView):
     pass
 
+class SavingsAccountList(APIView):
+    """
+    List all savings accounts
+    """
+    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+
+    def get(self, request, format=None):
+        accounts = SavingsAccount.objects.all()
+        serializer = SavingsAccountSerializer(accounts, many=True)
+        data_dict = {"status":200, "data":serializer.data}
+        return Response(data_dict, status=status.HTTP_200_OK)
+
 
 class SavingsPaymentList(APIView):
     """

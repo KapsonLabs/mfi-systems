@@ -141,5 +141,5 @@ class InstitutionStaffCreate(APIView):
             # except:
             #     print("Failed")
             #     # return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(staff_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

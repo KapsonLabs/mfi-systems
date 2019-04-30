@@ -6,4 +6,5 @@ urlpatterns = [
     path('institutions/<int:pk>/', views.InstitutionDetail.as_view(), name="institution_detail"),
     path('institutions/institution_settings/', views.InstitutionSettingsList.as_view(), name="institution_settings"),
     path('institutions/institution_settings/<int:pk>/', views.InstitutionSettingsDetail.as_view(), name="institution_settings_detail"),
+    path('institutions/institution_staff/', views.InstitutionStaffCreate.as_view(), name="institution_staff_create"),
 ]

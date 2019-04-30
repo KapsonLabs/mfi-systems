@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from accounts.serializers import UserSerializer
 from .models import Institution, InstitutionSettings, InstitutionStaff
 
 class InstitutionCreateSerializer(serializers.ModelSerializer):
@@ -15,6 +16,8 @@ class InstitutionSettingsCreateSerializer(serializers.ModelSerializer):
 
 class InstitutionStaffCreateSerializer(serializers.ModelSerializer):
 
+    user_id = UserSerializer(read_only=True)
+
     class Meta:
         model = InstitutionStaff
-        fields = ('id', 'user_id', 'institution_id', 'staff_name', 'staff_role', 'staff_responsibility', 'date_created')
+        fields = ('id', 'user_id', 'institution_id', 'staff_role', 'staff_responsibility', 'phone_dialing_code','phone_number','date_created')

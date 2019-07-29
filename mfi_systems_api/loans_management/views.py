@@ -16,11 +16,20 @@ from helpers.helpers import get_object, calculate_next_payment_date, calculate_p
 
 from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
 
+class CheckLoanEligibility(APIView):
+    pass
+
+class ListEligibleMmebers(APIView):
+    pass
+
+class ListLoanCycles(APIView):
+    pass
+
 class LoansList(APIView):
     """
     List all groups and create a group.
     """
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,  LoanOfficerPermissions)
 
     def get(self, request, format=None):
         related_links = 'links'
@@ -56,7 +65,7 @@ class LoansDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
-    permission_classes = (permissions.IsAuthenticated, )
+    permission_classes = (permissions.IsAuthenticated,  LoanOfficerPermissions)
 
     def get(self, request, pk, format=None):
         loan_group = get_object(Loans, pk)

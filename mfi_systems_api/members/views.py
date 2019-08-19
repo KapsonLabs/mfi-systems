@@ -15,6 +15,10 @@ from rest_framework import status
 from rest_framework import permissions
 from helpers.helpers import get_object, generate_account_number, send_sms
 from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
+from django.conf import settings
+
+import urllib.request
+import json
 
 class GroupList(APIView):
     """
@@ -291,32 +295,94 @@ class SavingsPaymentList(APIView):
     permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
 
     def post(self, request, format=None):
-        savings_payment_serializer = SavingsPaymentsSerializer(data=request.data)
+        savings_data = request.data.copy()
+        payment_method = savings_data.pop('payment_method', None)
+        phone_number   = savings_data.pop('phone_number', None)
+
+        savings_payment_serializer = SavingsPaymentsSerializer(data=savings_data)
         if savings_payment_serializer.is_valid():
-            savings_payment_serializer.save()
-            #add amount to savings account
-            savings_account = get_object(SavingsAccount, savings_payment_serializer.data['savings_account_related'])
+            if payment_method[0] == "CASH":
+                savings_payment_serializer.save()
+                #add amount to savings account
+                savings_account = get_object(SavingsAccount, savings_payment_serializer.data['savings_account_related'])
 
-            saving_amount_update = {
-                "account_balance": float(savings_account.account_balance)+float(savings_payment_serializer.data['amount_paid']),
-                "running_balance": float(savings_account.running_balance)+float(savings_payment_serializer.data['amount_paid']),
-            }
+                saving_amount_update = {
+                    "account_balance": float(savings_account.account_balance)+float(savings_payment_serializer.data['amount_paid']),
+                    "running_balance": float(savings_account.running_balance)+float(savings_payment_serializer.data['amount_paid']),
+                }
 
-            SavingsAccount.objects.update_or_create(
-                        id=savings_account.pk, defaults=saving_amount_update)
+                SavingsAccount.objects.update_or_create(
+                            id=savings_account.pk, defaults=saving_amount_update)
 
-            savings_account_updated = get_object(SavingsAccount, savings_account.pk)
+                savings_account_updated = get_object(SavingsAccount, savings_account.pk)
 
-            #send twilio sms with payment details
-            phone_number = "{}{}".format(savings_account.group_member_related.phone_dialing_code, savings_account.group_member_related.phone_number)
-            message = "You have deposited {} on Savings account Number {}. Your Balance is {}".format(savings_payment_serializer.data['amount_paid'], savings_account_updated.account_number, savings_account_updated.account_balance)
-            try:
-                send_sms(phone_number, message)
-            except:
-                print("Message Not sending")
+                #send twilio sms with payment details
+                phone_number = "{}{}".format(savings_account.group_member_related.phone_dialing_code, savings_account.group_member_related.phone_number)
+                message = "You have deposited {} on Savings account Number {}. Your Balance is {}".format(savings_payment_serializer.data['amount_paid'], savings_account_updated.account_number, savings_account_updated.account_balance)
+                try:
+                    send_sms(phone_number, message)
+                except:
+                    print("Message Not sending")
 
-            data_dict = {"status":201, "data":savings_payment_serializer.data, "savings_account": savings_account_updated.account_balance}
-            return Response(data_dict, status=status.HTTP_201_CREATED)
+                data_dict = {"status":201, "data":savings_payment_serializer.data, "savings_account": savings_account_updated.account_balance}
+                return Response(data_dict, status=status.HTTP_201_CREATED)
+            else:
+                savings_payment_serializer.save()
+                #add amount to savings account
+                savings_account = get_object(SavingsAccount, savings_payment_serializer.data['savings_account_related'])
+
+                saving_amount_update = {
+                    "account_balance": float(savings_account.account_balance)+float(savings_payment_serializer.data['amount_paid']),
+                    "running_balance": float(savings_account.running_balance)+float(savings_payment_serializer.data['amount_paid']),
+                }
+
+                SavingsAccount.objects.update_or_create(
+                            id=savings_account.pk, defaults=saving_amount_update)
+
+                savings_account_updated = get_object(SavingsAccount, savings_account.pk)
+
+                data = {
+                    "service_code":"M002",
+                    "merchant_phone_number":phone_number[0],
+                    "client_phone_number":phone_number[0],
+                    "amount":"2000",
+                    "reason":"Savings Payment"
+                }
+
+                body = str.encode(json.dumps(data))
+
+                url = '{}/api/v1/payments/service_payment/'.format(settings.PAY_URL)
+                # api_key = '7/1GTEPNjebtQ4Oq3kLFZyYoXhivqCxBKbfg0L0Q6yA80oGop2s/BzWdxmUzJv8yQERZ5NKvqDzx8j8AEh6xWQ==' # Replace this with the API key for the web service
+                headers = {'Content-Type':'application/json'}
+
+                req = urllib.request.Request(url, body, headers)
+
+                try:
+                    response = urllib.request.urlopen(req)
+
+                    result = response.read()
+                    #decode result from binary string to dictionary
+                    decoded_result=json.loads(result.decode())
+                    print(decoded_result)
+                    # scored_label = decoded_result['Results']['output1'][0]['Scored Labels']
+                    # print(scored_label)
+                except urllib.error.HTTPError as error:
+                    print("The request failed with status code: " + str(error.code))
+
+                # Print the headers - they include the requert ID and the timestamp, which are useful for debugging the failure
+                    print(error.info())
+                    print(json.loads(error.read().decode("utf8", 'ignore')))
+
+                #send twilio sms with payment details
+                phone_number = "{}{}".format(savings_account.group_member_related.phone_dialing_code, savings_account.group_member_related.phone_number)
+                message = "You have deposited {} on Savings account Number {}. Your Balance is {}".format(savings_payment_serializer.data['amount_paid'], savings_account_updated.account_number, savings_account_updated.account_balance)
+                try:
+                    send_sms(phone_number, message)
+                except:
+                    print("Message Not sending")
+
+                data_dict = {"status":201, "data":savings_payment_serializer.data, "savings_account": savings_account_updated.account_balance}
+                return Response(data_dict, status=status.HTTP_201_CREATED)
         return Response(savings_payment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SavingsPaymentDetail(APIView):

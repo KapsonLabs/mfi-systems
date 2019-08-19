@@ -15,6 +15,7 @@ from rest_framework import status
 from rest_framework import permissions
 from helpers.helpers import get_object, generate_account_number, send_sms
 from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
+from django.conf import settings
 
 import urllib.request
 import json
@@ -350,7 +351,7 @@ class SavingsPaymentList(APIView):
 
                 body = str.encode(json.dumps(data))
 
-                url = 'http://localhost:8000/api/v1/payments/service_payment/'
+                url = '{}/api/v1/payments/service_payment/'.format(settings.PAY_URL)
                 # api_key = '7/1GTEPNjebtQ4Oq3kLFZyYoXhivqCxBKbfg0L0Q6yA80oGop2s/BzWdxmUzJv8yQERZ5NKvqDzx8j8AEh6xWQ==' # Replace this with the API key for the web service
                 headers = {'Content-Type':'application/json'}
 

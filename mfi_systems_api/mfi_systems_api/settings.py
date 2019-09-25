@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -198,3 +201,5 @@ AUTH_USER_MODEL = 'accounts.User'
 
 TWILIO_ACCOUNT_SID = 'ACd15015ddd8cca1e5bf7381a469ad6800'
 TWILIO_AUTH_TOKEN = '57e76a68c06fca078e38139f4418b20d'
+
+PAY_URL=os.getenv('PAY_URL')

@@ -2,3 +2,4 @@ __pycache__
 *.py
 mfi_env/
 .vscode
+.ENV

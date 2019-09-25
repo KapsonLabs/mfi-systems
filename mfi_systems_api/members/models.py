@@ -34,6 +34,7 @@ class GroupMember(models.Model):
     id_attachment_front         = models.ImageField(upload_to='images/', blank=True, null=True)#[image_front_face, image_back_face],
     id_attachment_back          = models.ImageField(upload_to='images/', blank=True, null=True)#[image_front_face, image_back_face],
     profile_picture             = models.ImageField(upload_to='images/', blank=True, null=True)
+    utility_bill                = models.FileField(upload_to='documents/', blank=True, null=True)
     present_village             = models.CharField(max_length=20)
     present_subcounty           = models.CharField(max_length=20)
     present_county              = models.CharField(max_length=20)

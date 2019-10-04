@@ -14,7 +14,7 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework import permissions
 from helpers.helpers import get_object, generate_account_number, send_sms
-from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
+from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions, TellerPermissions
 from django.conf import settings
 
 import urllib.request
@@ -292,7 +292,7 @@ class SavingsPaymentList(APIView):
     """
     List and create savings payments
     """
-    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, TellerPermissions)
 
     def post(self, request, format=None):
         savings_data = request.data.copy()
@@ -407,7 +407,7 @@ class SavingsWithdrawal(APIView):
     """
     Withdraw savings from account
     """
-    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions, )
+    permission_classes = (permissions.IsAuthenticated, TellerPermissions)
 
     def post(self, request):
         withraw_data = request.data.copy()

@@ -123,8 +123,14 @@ class InstitutionStaffCreate(APIView):
             user_account_serializer.is_valid(raise_exception=True)
             if staff_serializer.validated_data['staff_role'] == 'LOAN_OFFICER':
                 user_account_serializer.save(is_loan_officer=True)
-            else:
+            elif staff_serializer.validated_data['staff_role'] == 'BRANCH_MANAGER':
                 user_account_serializer.save(is_branch_manager=True)
+            elif staff_serializer.validated_data['staff_role'] == 'LOAN_MANAGER':
+                user_account_serializer.save(is_loan_manager=True)
+            elif staff_serializer.validated_data['staff_role'] == 'TELLER':
+                user_account_serializer.save(is_teller=True)
+            elif staff_serializer.validated_data['staff_role'] == 'ASST_BRANCH_MANAGER':
+                user_account_serializer.save(is_asst_branch_manager=True)
 
             user = User.objects.get(pk=user_account_serializer.data['id'])
         

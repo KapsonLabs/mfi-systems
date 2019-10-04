@@ -52,6 +52,18 @@ class LoginView(generics.CreateAPIView):
                 institution_staff = InstitutionStaff.objects.get(user_id=user)
                 assigned_institution = Institution.objects.get(id=institution_staff.institution_id.pk)
                 institution = {"id":assigned_institution.pk, "institution_status":assigned_institution.is_institution_active}
+            elif user.is_loan_manager == True:
+                institution_staff = InstitutionStaff.objects.get(user_id=user)
+                assigned_institution = Institution.objects.get(id=institution_staff.institution_id.pk)
+                institution = {"id":assigned_institution.pk, "institution_status":assigned_institution.is_institution_active}
+            elif user.is_asst_branch_manager == True:
+                institution_staff = InstitutionStaff.objects.get(user_id=user)
+                assigned_institution = Institution.objects.get(id=institution_staff.institution_id.pk)
+                institution = {"id":assigned_institution.pk, "institution_status":assigned_institution.is_institution_active}
+            elif user.is_branch_manager == True:
+                institution_staff = InstitutionStaff.objects.get(user_id=user)
+                assigned_institution = Institution.objects.get(id=institution_staff.institution_id.pk)
+                institution = {"id":assigned_institution.pk, "institution_status":assigned_institution.is_institution_active}
             login_data = {"user_data":user_serializer.data, "token_data":token_serializer.data, "institution":institution}
             return Response(login_data)
         return Response(status=status.HTTP_404_NOT_FOUND)

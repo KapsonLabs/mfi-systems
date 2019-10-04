@@ -23,6 +23,16 @@ class AsstBranchManagerPermissions(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_asst_branch_manager and request.user.is_active
 
+class BranchManagerAsstBranchManagerPermissions(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_asst_branch_manager or request.user.is_branch_manager and request.user.is_active
+
+class LoanManagerAsstBranchManagerPermissions(BasePermission):
+
+    def has_permission(self, request, view):
+        return request.user.is_asst_branch_manager or request.user.is_loan_manager and request.user.is_active
+
 class TellerPermissions(BasePermission):
 
     def has_permission(self, request, view):

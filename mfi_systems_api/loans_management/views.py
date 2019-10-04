@@ -14,7 +14,7 @@ from rest_framework import permissions
 
 from helpers.helpers import get_object, calculate_next_payment_date, calculate_payment_cycles, calculate_balance
 
-from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions
+from accounts.permissions import BranchManagerPermissions, LoanClientPermissions, LoanOfficerPermissions, BranchManagerAsstBranchManagerPermissions, LoanManagerAsstBranchManagerPermissions
 
 class CheckLoanEligibility(APIView):
     pass
@@ -103,7 +103,7 @@ class LoansStatus(APIView):
         return Response(data_dict, status=status.HTTP_200_OK)
 
 class LoanStatusUpdate(generics.UpdateAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, LoanManagerAsstBranchManagerPermissions)
 
     def update(self, request, pk ,*args, **kwargs):
         instance = get_object(Loans, pk)
@@ -151,7 +151,7 @@ class LoanStatusUpdate(generics.UpdateAPIView):
 
 
 class LoanDisbursement(generics.UpdateAPIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, BranchManagerAsstBranchManagerPermissions)
 
     def update(self, request, pk ,*args, **kwargs):
         instance = get_object(Loans, pk)
@@ -203,7 +203,7 @@ class LoanCyclesView(APIView):
         return Response(data_dict, status=status.HTTP_200_OK)
 
 class LoanPaymentsView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request, pk ,format=None):
         loan_cycle_payment = LoanPaymentsSerializer(data=request.data)

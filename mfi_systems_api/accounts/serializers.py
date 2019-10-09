@@ -32,7 +32,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id','username', 'first_name', 'last_name', 'email', 'is_institution_administrator', 'is_loan_officer', 'is_client')
+        fields = ('id','username', 'first_name', 'last_name', 'email', 'is_institution_administrator', 'is_loan_officer', 'is_client', 'is_loan_manager', 'is_teller', 'is_branch_manager', 'is_asst_branch_manager')
 
 class TokenSerializer(serializers.Serializer):
     """

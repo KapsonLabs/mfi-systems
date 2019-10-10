@@ -29,7 +29,7 @@ class LoansList(APIView):
     """
     List all groups and create a group.
     """
-    permission_classes = (permissions.IsAuthenticated,  LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, format=None):
         related_links = 'links'
@@ -65,7 +65,7 @@ class LoansDetail(APIView):
     """
     Retrieve, update or delete a snippet instance.
     """
-    permission_classes = (permissions.IsAuthenticated,  LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, pk, format=None):
         loan_group = get_object(Loans, pk)
@@ -103,7 +103,7 @@ class LoansStatus(APIView):
         return Response(data_dict, status=status.HTTP_200_OK)
 
 class LoanStatusUpdate(generics.UpdateAPIView):
-    permission_classes = (permissions.IsAuthenticated, LoanManagerAsstBranchManagerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def update(self, request, pk ,*args, **kwargs):
         instance = get_object(Loans, pk)
@@ -151,7 +151,7 @@ class LoanStatusUpdate(generics.UpdateAPIView):
 
 
 class LoanDisbursement(generics.UpdateAPIView):
-    permission_classes = (permissions.IsAuthenticated, BranchManagerAsstBranchManagerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def update(self, request, pk ,*args, **kwargs):
         instance = get_object(Loans, pk)
@@ -183,7 +183,7 @@ class LoanDisbursement(generics.UpdateAPIView):
 
 
 class LoanCyclesView(APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, pk, format=None):
         cycles=LoanCycles.objects.all()

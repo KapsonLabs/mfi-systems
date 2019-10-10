@@ -97,6 +97,8 @@ class UserClientCreate(APIView):
 
 
 class UserDetail(APIView):
+    permission_classes = (permissions.IsAuthenticated, )
+
     def get_object(self, pk):
         try:
             return User.objects.get(pk=pk)
@@ -116,7 +118,7 @@ class MemberFeesPayment(APIView):
     """
     Get the member fees to be paid on registration
     """
-    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, pk, format=None):
         group = get_object(LoanGroup, pk)
@@ -264,7 +266,7 @@ class SavingsToBePaid(APIView):
     """
     Return amount of money to be paid and next payment date.
     """
-    permissions_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    permissions_classes = (permissions.IsAuthenticated, )
     def get(self, request, pk, format=None):
         group = get_object(LoanGroup, pk)
         institution_settings = get_object(InstitutionSettings, group.institution_id.pk)
@@ -279,7 +281,7 @@ class SavingsAccountList(APIView):
     """
     List all savings accounts
     """
-    permission_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def get(self, request, format=None):
         accounts = SavingsAccount.objects.all()
@@ -292,7 +294,7 @@ class SavingsPaymentList(APIView):
     """
     List and create savings payments
     """
-    permission_classes = (permissions.IsAuthenticated, TellerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request, format=None):
         savings_data = request.data.copy()
@@ -389,7 +391,7 @@ class SavingsPaymentDetail(APIView):
     """
     Get savings payment by user/member id
     """
-    permissions_classes = (permissions.IsAuthenticated, LoanOfficerPermissions)
+    permissions_classes = (permissions.IsAuthenticated, )
 
     def post(self, request):
         account_details = AccountNumberSerializer(data=request.data)
@@ -407,7 +409,7 @@ class SavingsWithdrawal(APIView):
     """
     Withdraw savings from account
     """
-    permission_classes = (permissions.IsAuthenticated, TellerPermissions)
+    permission_classes = (permissions.IsAuthenticated, )
 
     def post(self, request):
         withraw_data = request.data.copy()
